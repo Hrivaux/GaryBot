@@ -52,14 +52,6 @@ const navItems: NavItem[] = [
     name: "Mes véhicules",
     path: "/basic-tables"
   },
-  {
-    name: "Pages",
-    icon: <PageIcon />,
-    subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
-    ],
-  },
 ];
 
 const othersItems: NavItem[] = [
