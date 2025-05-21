@@ -85,7 +85,7 @@ class OpenAiService
             "Ensuite, génère d'autres tâches d’entretien prévisionnel pour les 12 prochains mois à partir d’aujourd’hui.\n" .
             "Pour chaque tâche, donne : task, estimated_date (YYYY-MM-DD), estimated_km.\n" .
             "Retourne uniquement un tableau JSON valide avec les clés : task, estimated_date (YYYY-MM-DD), estimated_km.\n" .
-            "N'ajoute aucun commentaire, aucun texte, aucune introduction, aucune balise ```json.",
+            'Ajoute aucun commentaire, aucun texte, aucune introduction, aucune balise ```json ni """, aucun symbole, commence directement par le début du tableau JSON.',
             $context['marque'] ?? 'inconnue',
             $context['modele'] ?? 'inconnu',
             $context['km'] ?? 'N/A',
@@ -114,7 +114,6 @@ class OpenAiService
 
         $data = $response->toArray(false);
         $content = trim($data['choices'][0]['message']['content'] ?? '');
-
         $decoded = json_decode($content, true);
 
         if (!is_array($decoded)) {
