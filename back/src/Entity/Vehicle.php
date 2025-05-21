@@ -2,10 +2,13 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\Post;
+use App\State\VehicleStateProcessor;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\VehicleRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+#[Post(processor: VehicleStateProcessor::class)]
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
 #[ApiResource]
 class Vehicle
@@ -27,7 +30,7 @@ class Vehicle
     #[ORM\Column(length: 255)]
     private ?string $modele = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(nullable: true, type: 'datetime_immutable')]
     private ?\DateTimeImmutable $date_mise_circulation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -68,6 +71,10 @@ class Vehicle
 
     #[ORM\Column(nullable: true)]
     private ?int $km = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -287,6 +294,17 @@ class Vehicle
     {
         $this->km = $km;
 
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
         return $this;
     }
 }
