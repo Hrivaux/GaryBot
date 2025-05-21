@@ -42,7 +42,11 @@ const navItems: NavItem[] = [
     name: "User Profile",
     path: "/profile",
   },
-
+  {
+    icon: <PageIcon />, 
+    name: "Infos",
+    path: "/infos", 
+  },
   {
     name: "Forms",
     icon: <ListIcon />,
@@ -62,6 +66,7 @@ const navItems: NavItem[] = [
     ],
   },
 ];
+
 
 const othersItems: NavItem[] = [
   {
@@ -92,7 +97,15 @@ const othersItems: NavItem[] = [
       { name: "Sign Up", path: "/signup", pro: false },
     ],
   },
+  {
+    icon: <PageIcon />,
+    name: "Infos",
+    subItems: [
+      { name: "Page Infos", path: "/infos", pro: false }
+    ]
+  }
 ];
+
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
