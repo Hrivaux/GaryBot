@@ -1,49 +1,50 @@
 security:
-  password_hashers:
-    Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-  providers:
-    app_user_provider:
-      entity:
-        class: App\Entity\User
-        property: email
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
 
-  firewalls:
-    # assets & profiler
-    dev:
-      pattern: ^/(_(profiler|wdt)|css|images|js)/
-      security: false
+    firewalls:
+        # assets & profiler
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
 
-    # API stateless JWT
-    api:
-      pattern: ^/api
-      stateless: true
-      provider: app_user_provider
+        # API stateless JWT
+        api:
+            pattern:   ^/api
+            stateless: true
+            provider:  app_user_provider
 
-      json_login:
-        check_path: /api/login
-        username_path: email
-        password_path: password
-        success_handler: lexik_jwt_authentication.handler.authentication_success
-        failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            json_login:
+                check_path:       /api/login
+                username_path:    email
+                password_path:    password
+                success_handler:  lexik_jwt_authentication.handler.authentication_success
+                failure_handler:  lexik_jwt_authentication.handler.authentication_failure
 
-      jwt: ~
+            jwt: ~
 
-    # firewall “web” traditionnel (sessions, forms…)
-    main:
-      lazy: true
-      provider: app_user_provider
-      # form_login, logout, etc. à configurer si nécessaire
+        # firewall “web” traditionnel (sessions, forms…)
+        main:
+            lazy:     true
+            provider: app_user_provider
+            # form_login, logout, etc. à configurer si nécessaire
 
-  access_control:
-    # endpoints publics
-    - { path: ^/api/register, roles: PUBLIC_ACCESS }
-    - { path: ^/api/login, roles: PUBLIC_ACCESS }
+    access_control:
+        # endpoints publics
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/login,    roles: PUBLIC_ACCESS }
 
-    # tout le reste de l’API nécessite un JWT valide
-    - { path: ^/api, roles: PUBLIC_ACCESS }
-    - { path: ^/api/me, roles: IS_AUTHENTICATED_FULLY }
+        # tout le reste de l’API nécessite un JWT valide
+        - { path: ^/api,    roles: PUBLIC_ACCESS }
+        - { path: ^/api/me, roles: IS_AUTHENTICATED_FULLY }
+        # - { path: ^/api,          roles: IS_AUTHENTICATED_FULLY }
 
-    # exemples pour votre partie web :
-    # - { path: ^/login$,     roles: PUBLIC_ACCESS }
-    # - { path: ^/admin,      roles: ROLE_ADMIN }
+        # exemples pour votre partie web :
+        # - { path: ^/login$,     roles: PUBLIC_ACCESS }
+        # - { path: ^/admin,      roles: ROLE_ADMIN }
