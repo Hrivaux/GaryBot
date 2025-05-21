@@ -1,11 +1,15 @@
+'use client';
 import { Outfit } from 'next/font/google';
 import './globals.css';
 
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { ChatProvider } from '@/context/ChatContext'; 
+import { usePathname } from 'next/navigation';
+import FloatingChatButton from '@/components/chabot/FloatingChatButton';
 
 const outfit = Outfit({
-  subsets: ["latin"],
+  subsets: ['latin'],
 });
 
 export default function RootLayout({
@@ -13,11 +17,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+
+  const shouldShowFloatingChat = pathname !== '/garybot';
+
+  
   return (
-    <html lang="en">
+    <html lang="fr">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <ThemeProvider>
-          <SidebarProvider>{children}</SidebarProvider>
+          <SidebarProvider>
+            <ChatProvider>
+              {children}
+              {shouldShowFloatingChat && <FloatingChatButton />}
+            </ChatProvider>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>
