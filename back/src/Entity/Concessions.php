@@ -7,6 +7,7 @@ use App\Repository\ConcessionsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConcessionsRepository::class)]
+#[ORM\Index(name: 'idx_concessions_zipcode', columns: ['zipcode'])]
 #[ApiResource]
 class Concessions
 {
