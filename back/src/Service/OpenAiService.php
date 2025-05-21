@@ -114,6 +114,7 @@ class OpenAiService
 
         $data = $response->toArray(false);
         $content = trim($data['choices'][0]['message']['content'] ?? '');
+        dump($content);
         $decoded = json_decode($content, true);
 
         if (!is_array($decoded)) {
