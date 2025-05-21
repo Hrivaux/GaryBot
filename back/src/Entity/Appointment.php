@@ -12,16 +12,16 @@ use ApiPlatform\Filter\BooleanFilter;
 use ApiPlatform\Filter\DateFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use App\Entity\User;
+use App\Entity\Vehicle;
+use App\Entity\Operations;
 
-#[ORM\Entity(repositoryClass: AppointmentRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
     normalizationContext: ['groups' => ['appointment:read']],
     denormalizationContext: ['groups' => ['appointment:write']],
     operations: [
-        // liste tous les créneaux
         new GetCollection(),
-
-        // endpoint dédié aux dispo
         new GetCollection(
             name: 'available',
             uriTemplate: '/appointments/available',
@@ -29,7 +29,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
             read: false,
             paginationEnabled: false
         ),
-
         new Post(),
         new Get(),
         new Put()
@@ -57,46 +56,99 @@ class Appointment
     #[Groups(['appointment:read', 'appointment:write'])]
     private bool $isBooked = false;
 
-    // --- getters & setters ---
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['appointment:read', 'appointment:write'])]
+    private ?User $user = null;
+
+    #[ORM\ManyToOne(targetEntity: Vehicle::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['appointment:read', 'appointment:write'])]
+    private ?Vehicle $vehicle = null;
+
+    #[ORM\ManyToOne(targetEntity: Operations::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['appointment:read', 'appointment:write'])]
+    private ?Operations $operation = null;
+
     public function getId(): ?int
     {
         return $this->id;
     }
+
     public function getStartTime(): \DateTimeImmutable
     {
         return $this->startTime;
     }
-    public function setStartTime(\DateTimeImmutable $dt): self
+
+    public function setStartTime(\DateTimeImmutable $startTime): self
     {
-        $this->startTime = $dt;
+        $this->startTime = $startTime;
         return $this;
     }
+
     public function getEndTime(): \DateTimeImmutable
     {
         return $this->endTime;
     }
-    public function setEndTime(\DateTimeImmutable $dt): self
+
+    public function setEndTime(\DateTimeImmutable $endTime): self
     {
-        $this->endTime = $dt;
+        $this->endTime = $endTime;
         return $this;
     }
+
     public function getIsBooked(): bool
     {
         return $this->isBooked;
     }
-    public function setIsBooked(bool $b): self
+
+    public function setIsBooked(bool $isBooked): self
     {
-        $this->isBooked = $b;
+        $this->isBooked = $isBooked;
         return $this;
     }
 
-    // --- Lifecycle pour garantir start < end et isBooked false par défaut ---
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    public function getVehicle(): ?Vehicle
+    {
+        return $this->vehicle;
+    }
+
+    public function setVehicle(Vehicle $vehicle): self
+    {
+        $this->vehicle = $vehicle;
+        return $this;
+    }
+
+    public function getOperation(): ?Operations
+    {
+        return $this->operation;
+    }
+
+    public function setOperation(Operations $operation): self
+    {
+        $this->operation = $operation;
+        return $this;
+    }
+
     #[ORM\PrePersist]
     public function prePersist(): void
     {
         if ($this->endTime <= $this->startTime) {
             throw new \InvalidArgumentException('Le créneau doit avoir une fin après le début.');
         }
-        // isBooked vaut déjà false
+        // assure que isBooked est bien à false par défaut
+        $this->isBooked = false;
     }
 }

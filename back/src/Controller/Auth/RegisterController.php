@@ -5,47 +5,42 @@ namespace App\Controller\Auth;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-class RegisterController extends AbstractController
+class RegisterController
 {
     public function __construct(
         private UserPasswordHasherInterface $hasher,
         private EntityManagerInterface $em,
         private ValidatorInterface $validator
-    ) {}
+    ) {
+    }
 
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $req): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        if (!isset($data['email'], $data['password'])) {
-            return $this->json(['error' => 'Champs requis manquants.'], 400);
-        }
-
+        $data = json_decode($req->getContent(), true);
         $user = (new User())
-            ->setEmail($data['email'])
-            ->setRoles(['ROLE_USER'])
-            ->setProfileCompleted(false)
-            ->setCreatedAt(new \DateTimeImmutable())
-            ->setUpdatedAt(new \DateTimeImmutable());
+            ->setEmail($data['email'] ?? '')
+            ->setPassword($data['password'] ?? '')
+        ;
 
-        $hashed = $this->hasher->hashPassword($user, $data['password']);
-        $user->setPassword($hashed);
-
+        // Validation basique
         $errors = $this->validator->validate($user);
         if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], 400);
+            return new JsonResponse(['errors' => (string) $errors], 400);
         }
+
+        // Hashage du mot de passe
+        $hashed = $this->hasher->hashPassword($user, $user->getPassword());
+        $user->setPassword($hashed);
 
         $this->em->persist($user);
         $this->em->flush();
 
-        return $this->json(['message' => 'Utilisateur créé avec succès.'], 201);
+        return new JsonResponse(['status' => 'user created'], 201);
     }
 }
