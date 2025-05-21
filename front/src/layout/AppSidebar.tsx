@@ -305,6 +305,31 @@ const AppSidebar: React.FC = () => {
           </div>
         </nav>
       </div>
+            <div className="mt-auto mb-6">
+        <button
+          onClick={() => {
+            localStorage.removeItem("token");
+            window.location.href = "/";
+          }}
+          className="flex items-center gap-2 w-full text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-md transition"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H5a2 2 0 01-2-2V6a2 2 0 012-2h5a3 3 0 013 3v1"
+            />
+          </svg>
+          {isExpanded || isHovered || isMobileOpen ? "Déconnexion" : null}
+        </button>
+      </div>
+
     </aside>
   );
 };

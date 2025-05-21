@@ -6,19 +6,44 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation"; // 👈 import important
 
 export default function SignInForm({ onSwitchMode }: { onSwitchMode: () => void }) {
+  const router = useRouter(); // 👈 hook pour redirection
   const [showPassword, setShowPassword] = useState(false);
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Credentials:", {
-      email,
-      password,
-    });
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Erreur de connexion :", data.error || data);
+        alert("Email ou mot de passe invalide.");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      console.log("Connexion réussie. Token :", data.token);
+
+      // ✅ Redirection après connexion réussie
+      router.push("/accueil"); // ← adapte cette route si nécessaire
+
+    } catch (error) {
+      console.error("Erreur réseau :", error);
+      alert("Erreur réseau lors de la tentative de connexion.");
+    }
   };
 
   return (
