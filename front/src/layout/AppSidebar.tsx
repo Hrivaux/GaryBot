@@ -28,7 +28,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: <UserCircleIcon />,
-    name: "User Profile",
+    name: "Profil",
     path: "/profile",
   },
   // {
@@ -38,13 +38,8 @@ const navItems: NavItem[] = [
   // },
   {
     icon: <CalenderIcon />,
-    name: "Calendar",
+    name: "Calendrier",
     path: "/calendar",
-  },
-  {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
   },
   {
     icon: <PageIcon />, 
@@ -52,9 +47,9 @@ const navItems: NavItem[] = [
     path: "/infos", 
   },
   {
-    name: "Tables",
     icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+    name: "Mes véhicules",
+    path: "/basic-tables"
   },
   {
     name: "Pages",
