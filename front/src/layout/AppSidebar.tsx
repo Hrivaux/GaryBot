@@ -11,6 +11,7 @@ import {
   GridIcon,
   HorizontaLDots,
   ListIcon,
+  MainLogoIcon,
   PageIcon,
   PieChartIcon,
   PlugInIcon,
@@ -31,11 +32,11 @@ const navItems: NavItem[] = [
     name: "User Profile",
     path: "/profile",
   },
-  // {
-  //   icon: <GridIcon />,
-  //   name: "Dashboard",
-  //   subItems: [{ name: "Ecommerce", path: "/", pro: false }],
-  // },
+    {
+    icon: <MainLogoIcon />,
+    name: "GaryBot",
+    path: "/garybot",
+  },
   {
     icon: <CalenderIcon />,
     name: "Calendar",
