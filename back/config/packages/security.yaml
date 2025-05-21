@@ -42,6 +42,7 @@ security:
 
         # tout le reste de l’API nécessite un JWT valide
         - { path: ^/api,    roles: PUBLIC_ACCESS }
+        - { path: ^/api/me, roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/api,          roles: IS_AUTHENTICATED_FULLY }
 
         # exemples pour votre partie web :
