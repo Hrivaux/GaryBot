@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 'use client';
 
 import React, { useEffect, useState } from "react";
+=======
+"use client";
+import React from "react";
+>>>>>>> origin/pageVehicule/LL
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
@@ -9,6 +14,7 @@ import Label from "@/components/form/Label";
 
 export default function UserAddressCard() {
   const { isOpen, openModal, closeModal } = useModal();
+<<<<<<< HEAD
   const [user, setUser] = useState<any>(null);
   const [form, setForm] = useState({
     street: "",
@@ -88,6 +94,14 @@ export default function UserAddressCard() {
 
   if (!user) return <p>Chargement...</p>;
 
+=======
+
+  const handleSave = () => {
+    // TODO: Enregistrer les données en BDD (via mutation ou API call)
+    closeModal();
+  };
+
+>>>>>>> origin/pageVehicule/LL
   return (
     <>
       <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
@@ -100,22 +114,38 @@ export default function UserAddressCard() {
             <dl className="grid grid-cols-1 gap-4 lg:grid-cols-2 text-sm text-gray-800 dark:text-white/90">
               <div>
                 <dt className="text-xs text-gray-500 dark:text-gray-400 mb-1">Rue</dt>
+<<<<<<< HEAD
                 <dd>{user.street || "—"}</dd>
+=======
+                <dd>12 Avenue des Lilas</dd>
+>>>>>>> origin/pageVehicule/LL
               </div>
 
               <div>
                 <dt className="text-xs text-gray-500 dark:text-gray-400 mb-1">Code postal</dt>
+<<<<<<< HEAD
                 <dd>{user.postalcode || "—"}</dd>
+=======
+                <dd>75010</dd>
+>>>>>>> origin/pageVehicule/LL
               </div>
 
               <div>
                 <dt className="text-xs text-gray-500 dark:text-gray-400 mb-1">Ville</dt>
+<<<<<<< HEAD
                 <dd>{user.city || "—"}</dd>
+=======
+                <dd>Paris</dd>
+>>>>>>> origin/pageVehicule/LL
               </div>
 
               <div>
                 <dt className="text-xs text-gray-500 dark:text-gray-400 mb-1">Pays</dt>
+<<<<<<< HEAD
                 <dd>{user.country || "—"}</dd>
+=======
+                <dd>France</dd>
+>>>>>>> origin/pageVehicule/LL
               </div>
             </dl>
           </div>
@@ -139,22 +169,38 @@ export default function UserAddressCard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className="lg:col-span-2">
                 <Label>Rue</Label>
+<<<<<<< HEAD
                 <Input name="street" value={form.street} onChange={handleChange} />
+=======
+                <Input type="text" defaultValue="12 Avenue des Lilas" />
+>>>>>>> origin/pageVehicule/LL
               </div>
 
               <div>
                 <Label>Code postal</Label>
+<<<<<<< HEAD
                 <Input name="postalcode" value={form.postalcode} onChange={handleChange} />
+=======
+                <Input type="text" defaultValue="75010" />
+>>>>>>> origin/pageVehicule/LL
               </div>
 
               <div>
                 <Label>Ville</Label>
+<<<<<<< HEAD
                 <Input name="city" value={form.city} onChange={handleChange} />
+=======
+                <Input type="text" defaultValue="Paris" />
+>>>>>>> origin/pageVehicule/LL
               </div>
 
               <div className="lg:col-span-2">
                 <Label>Pays</Label>
+<<<<<<< HEAD
                 <Input name="country" value={form.country} onChange={handleChange} />
+=======
+                <Input type="text" defaultValue="France" />
+>>>>>>> origin/pageVehicule/LL
               </div>
             </div>
 

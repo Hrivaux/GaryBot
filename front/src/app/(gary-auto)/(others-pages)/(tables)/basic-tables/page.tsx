@@ -1,25 +1,13 @@
-import ComponentCard from "@/components/common/ComponentCard";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import BasicTableOne from "@/components/tables/BasicTableOne";
-import { Metadata } from "next";
-import React from "react";
+'use client';
+import React from 'react';
+import BasicTableOne from '@/components/tables/BasicTableOne';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 
-export const metadata: Metadata = {
-  title: "Next.js Basic Table |  GaryAuto - Next.js Dashboard Template",
-  description:
-    "This is Next.js Basic Table  page for  GaryAuto  Tailwind CSS Admin Dashboard Template",
-  // other metadata
-};
-
-export default function BasicTables() {
+export default function MesVehiculesPage() {
   return (
-    <div>
-      <PageBreadcrumb pageTitle="Basic Table" />
-      <div className="space-y-6">
-        <ComponentCard title="Basic Table 1">
-          <BasicTableOne />
-        </ComponentCard>
-      </div>
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      <PageBreadcrumb pageTitle="Mes véhicules" />
+      <BasicTableOne />
     </div>
   );
 }
