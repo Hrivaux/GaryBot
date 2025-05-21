@@ -29,11 +29,12 @@ export default function UserAddressCard() {
       if (!token) return;
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/me", {
-          headers: {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/me`, {
+            headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+
 
         if (!res.ok) {
           console.error("Erreur lors de la récupération des infos utilisateur");
