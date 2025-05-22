@@ -17,8 +17,19 @@ export default function Infos() {
   useEffect(() => {
     const fetchEntretiens = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/entretiens`);
-        if (!response.ok) throw new Error("Erreur lors du chargement des données");
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Token manquant");
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/entretiens`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Erreur serveur : ${text}`);
+        }
 
         const data = await response.json();
         setEntretiens(data);
@@ -53,14 +64,14 @@ export default function Infos() {
           {entretiens.map((item, index) => (
             <div
               key={index}
-              className="bg-purple-100 text-purple-900 border border-purple-300 rounded-xl p-8 text-center shadow-md transition transform duration-300 hover:scale-105"
+              className="bg-[#e6ebff] text-[#3c4fcb] border border-[#c4ceff] rounded-xl p-8 text-center shadow-md transition transform duration-300 hover:scale-105"
               title={item.description}
             >
               <h2 className="text-3xl font-bold mb-4">{item.piece}</h2>
               <p className="text-lg font-medium mb-3">{item.description}</p>
 
               {(item.frequence_km || item.frequence_annees) && (
-                <span className="inline-block bg-purple-200 text-purple-900 text-sm font-semibold px-3 py-1 rounded-full">
+                <span className="inline-block bg-[#d6dcff] text-[#3c4fcb] text-sm font-semibold px-3 py-1 rounded-full">
                   {item.frequence_km
                     ? `Tous les ${item.frequence_km.toLocaleString()} km`
                     : `Tous les ${item.frequence_annees} an(s)`}

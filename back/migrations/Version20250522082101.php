@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250520173804 extends AbstractMigration
+final class Version20250522082101 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -21,7 +21,7 @@ final class Version20250520173804 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE operations CHANGE additionnal_help additionnal_help VARCHAR(255) DEFAULT NULL, CHANGE additionnal_comment additionnal_comment VARCHAR(255) DEFAULT NULL
+            CREATE TABLE entretien (id INT AUTO_INCREMENT NOT NULL, piece VARCHAR(255) NOT NULL, description LONGTEXT NOT NULL, frequence_km INT DEFAULT NULL, frequence_annees INT DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
     }
 
@@ -29,7 +29,7 @@ final class Version20250520173804 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE operations CHANGE additionnal_help additionnal_help VARCHAR(255) NOT NULL, CHANGE additionnal_comment additionnal_comment VARCHAR(255) NOT NULL
+            DROP TABLE entretien
         SQL);
     }
 }
