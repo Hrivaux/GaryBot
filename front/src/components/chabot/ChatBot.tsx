@@ -83,6 +83,23 @@ async function getDynamicPrompt(
   return reply;
 }
 
+// ⬇️ ⬇️ ⬇️ Place-la ici avant le composant principal ⬇️ ⬇️ ⬇️
+async function detectIntentAndGarage(userInput: string) {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/detect-intent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ message: userInput })
+  });
+
+  if (!res.ok) return null;
+  return await res.json(); // { intent: "take_appointment", garageName: "Peugeot Marseille" }
+}
+
+
 const ChatBot: React.FC = () => {
     const [garageList, setGarageList] = useState<Array<{
     name: string;
@@ -104,7 +121,91 @@ const ChatBot: React.FC = () => {
   const [vehicleMessages, setVehicleMessages] = useState<{ from: 'bot' | 'user'; text: string }[]>([]);
   const [findingGarage, setFindingGarage] = useState(false);
   const [garageMessages, setGarageMessages] = useState<{ from: 'bot' | 'user'; text: string }[]>([]);
-  
+  const [selectedGarage, setSelectedGarage] = useState<typeof garageList[0] | null>(null);
+const [selectedOperation, setSelectedOperation] = useState<{
+  id: number;
+  piece: string;
+  description: string;
+} | null>(null);
+
+const [userVehicles, setUserVehicles] = useState<Array<{
+  id: number;
+  immat: string;
+  marque: string;
+  modele: string;
+  nomCommercial: string;
+}>>([]);
+
+useEffect(() => {
+  const fetchUserVehicles = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/me/vehicles`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) throw new Error('Erreur lors du chargement des véhicules');
+
+      const data = await res.json();
+      setUserVehicles(data);
+    } catch (err) {
+      console.error("❌ Chargement des véhicules échoué :", err);
+    }
+  };
+
+  fetchUserVehicles();
+}, []);
+
+
+const operations = [
+  {
+    id: 1,
+    piece: "🔋 Batterie",
+    description: "Recharge si faible. À changer tous les 4 à 5 ans.",
+  },
+  {
+    id: 2,
+    piece: "🛢️ Huile moteur",
+    description: "Compléter ou changer tous les 10 000 km.",
+  },
+  {
+    id: 3,
+    piece: "💧 Liquide de frein",
+    description: "À changer tous les 2 ans.",
+  },
+  {
+    id: 4,
+    piece: "🌬️ Filtre à air",
+    description: "Changer tous les 20 000 km.",
+  },
+  {
+    id: 5,
+    piece: "🚗 Pneus",
+    description: "Vérifier mensuellement. Remplacer si usés.",
+  },
+  {
+    id: 6,
+    piece: "💦 Essuie-glaces",
+    description: "Changer tous les 6 à 12 mois.",
+  },
+  {
+    id: 7,
+    piece: "🌡️ Liquide de refroidissement",
+    description: "Changer tous les 2 à 4 ans.",
+  },
+  {
+    id: 8,
+    piece: "🧼 Filtre habitacle",
+    description: "Changer tous les 15 000 à 20 000 km.",
+  },
+  {
+    id: 9,
+    piece: "🧴 Lave-glace",
+    description: "Compléter régulièrement.",
+  },
+];
 const startGarageSearch = async () => {
   console.log("🔍 Recherche garage déclenchée"); // ← ajoute ceci
   setFindingGarage(true);
@@ -166,7 +267,52 @@ const startGarageSearch = async () => {
       console.log("💬 Formulaire soumis", { input, addingVehicle, findingGarage });
 
   const raw = input.trim();
-  if (!raw) return;
+if (!raw) return;
+
+// 🔍 Détection d'intention intelligente
+const intentData = await detectIntentAndGarage(raw);
+console.log("🎯 INTENTION DÉTECTÉE :", intentData); // 👈 ajoute ça
+if (intentData?.intent === 'take_appointment' && garageList && intentData.garageName) {
+  const match = garageList.find(g =>
+    g.name.toLowerCase().includes(intentData.garageName.toLowerCase()) ||
+    intentData.garageName.toLowerCase().includes(g.name.toLowerCase())
+  );
+
+
+  if (match) {
+    setSelectedGarage(match);
+    setGarageMessages(ms => [
+      ...ms,
+      { from: 'user', text: raw },
+      { from: 'bot', text: `📅 D'accord, choisissez une date pour un rendez-vous chez ${match.name}` }
+    ]);
+    setInput('');
+    return;
+  }
+}
+else if (intentData?.intent === 'take_appointment') {
+  setGarageMessages(ms => [
+    ...ms,
+    { from: 'bot', text: "🛠️ Vous souhaitez prendre rendez-vous, mais je n’ai pas compris dans quel garage. Pouvez-vous préciser ?" }
+  ]);
+  setInput('');
+  return;
+}
+
+
+
+if (findingGarage && garageList) {
+  const match = garageList.find(g =>
+    input.toLowerCase().includes(g.name.toLowerCase())
+  );
+
+  if (match) {
+    setGarageMessages(ms => [...ms, { from: 'user', text: input }]);
+    setInput('');
+    setSelectedGarage(match); // ← tu ajoutes ce nouvel état
+    return;
+  }
+}
 
   setGarageMessages((ms) => [...ms, { from: 'user', text: raw }]);
   setInput('');
@@ -174,45 +320,42 @@ const startGarageSearch = async () => {
   const token = localStorage.getItem('token');
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/find-garage`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ message: raw })
-    });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/find-garage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ message: raw })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
+  console.log("🧾 Réponse API find-garage :", data);
 
-    if (Array.isArray(data.garages)) {
-  setGarageList(data.garages); // ⬅️ stocke pour l’affichage carte + liste
-
-  for (const garage of data.garages) {
-    const garageInfo = `${garage.name}, ${garage.address}, ${garage.zipcode} ${garage.city} (${garage.distance} km)`;
-    setGarageMessages((ms) => [...ms, { from: 'bot', text: garageInfo }]);
+  if (!res.ok) {
+    setGarageMessages((ms) => [...ms, { from: 'bot', text: data.reply || "Erreur lors de la recherche." }]);
+    return;
   }
+
+  if (Array.isArray(data.garages)) {
+    setGarageList(data.garages);
+    for (const garage of data.garages) {
+      const garageInfo = `${garage.name}, ${garage.address}, ${garage.zipcode} ${garage.city} (${garage.distance} km)`;
+      setGarageMessages((ms) => [...ms, { from: 'bot', text: garageInfo }]);
+    }
+  }
+
+  setGarageMessages((ms) => [...ms, { from: 'bot', text: data.reply }]);
+} catch (error) {
+  console.error("💥 Erreur réseau :", error);
+  setGarageMessages((ms) => [...ms, { from: 'bot', text: "Erreur réseau. Veuillez réessayer." }]);
 }
 
-    if (!res.ok) {
-      setGarageMessages((ms) => [...ms, { from: 'bot', text: data.reply || "Erreur lors de la recherche." }]);
-      return;
-    }
 
-    setGarageMessages((ms) => [...ms, { from: 'bot', text: data.reply }]);
-
-    if (Array.isArray(data.garages)) {
-      for (const garage of data.garages) {
-        const garageInfo = `${garage.name}, ${garage.address}, ${garage.zipcode} ${garage.city} (${garage.distance} km)`;
-        setGarageMessages((ms) => [...ms, { from: 'bot', text: garageInfo }]);
-      }
-    }
-  } catch (error) {
-    setGarageMessages((ms) => [...ms, { from: 'bot', text: "Erreur réseau. Veuillez réessayer." }]);
-  }
 
   return;
 }
+
 
 
     if (addingVehicle) {
@@ -362,7 +505,7 @@ const activeMessages = addingVehicle
       </ul>
     </div>
 
-    {/* Carte */}
+              {/* Carte */}
             <div className="h-[300px] w-full rounded-lg overflow-hidden shadow border border-gray-300 dark:border-gray-700">
               <MapContainer
                 center={[garageList[0].latitude, garageList[0].longitude]}
@@ -388,6 +531,105 @@ const activeMessages = addingVehicle
             </div>
           </div>
         )}
+
+        {selectedGarage && !selectedOperation && (
+  <div className="mt-4 p-4 bg-white dark:bg-gray-700 rounded shadow">
+    <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+      🧰 Quel est le type d'intervention à faire chez {selectedGarage.name} ?
+    </h4>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {operations.map((op) => (
+        <button
+          key={op.id}
+          onClick={() => setSelectedOperation(op)}
+          className="p-3 border rounded-lg bg-white dark:bg-gray-800 hover:shadow text-left"
+        >
+          <div className="text-lg font-bold">{op.piece}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">{op.description}</div>
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+{selectedGarage && selectedOperation && (
+  <div className="mt-4 p-4 bg-white dark:bg-gray-700 rounded shadow">
+    <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+      📅 Choisissez une date pour {selectedOperation.piece} chez {selectedGarage.name}
+    </h4>
+    <input
+      type="date"
+      className="px-3 py-2 border rounded dark:bg-gray-800 dark:text-white"
+      min={new Date().toISOString().split("T")[0]}
+      onChange={async (e) => {
+        const date = e.target.value;
+        if (!date || !selectedGarage || !selectedOperation) return;
+
+        const token = localStorage.getItem('token');
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointment`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              garage_id: selectedGarage.id,
+              operation_id: selectedOperation.id,
+              date // Tu peux rajouter une heure ensuite ici
+            })
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            setGarageMessages(ms => [
+              ...ms,
+              { from: 'bot', text: `✅ Rendez-vous confirmé pour le ${date} chez ${selectedGarage.name} pour ${selectedOperation.piece}` }
+            ]);
+          } else {
+            setGarageMessages(ms => [
+              ...ms,
+              { from: 'bot', text: `❌ Erreur : ${result.error || 'Inconnue'}` }
+            ]);
+          }
+        } catch (err) {
+          setGarageMessages(ms => [
+            ...ms,
+            { from: 'bot', text: "❌ Erreur réseau lors de la réservation." }
+          ]);
+        }
+
+        // Reset après confirmation
+        setSelectedGarage(null);
+        setSelectedOperation(null);
+      }}
+    />
+  </div>
+)}
+{selectedGarage && selectedOperation && !selectedVehicleId && (
+  <div className="mt-4 p-4 bg-white dark:bg-gray-700 rounded shadow">
+    <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+      🚗 Choisissez le véhicule concerné
+    </h4>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {userVehicles.map(v => (
+        <button
+          key={v.id}
+          onClick={() => setSelectedVehicleId(v.id)}
+          className="p-3 border rounded-lg bg-white dark:bg-gray-800 hover:shadow text-left"
+        >
+          <div className="font-bold">{v.nomCommercial}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            {v.immat} — {v.marque} {v.modele}
+          </div>
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+
+
+
 
         {/* Card de confirmation */}
         {lastVehicle && (
