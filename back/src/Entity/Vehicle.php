@@ -2,94 +2,111 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\Post;
-use App\State\VehicleStateProcessor;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\VehicleRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use App\Entity\User;
 
-#[Post(processor: VehicleStateProcessor::class)]
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['vehicle:read']],
+    denormalizationContext: ['groups' => ['vehicle:write']]
+)]
+#[ORM\Table(name: 'vehicle')]
 class Vehicle
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?int $user_id = null;
+    // Relation ManyToOne vers User
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'vehicles')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
+    private User $user;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $immat = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $marque = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $modele = null;
 
-    #[ORM\Column(nullable: true, type: 'datetime_immutable')]
-    private ?\DateTimeImmutable $date_mise_circulation = null;
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
+    private ?\DateTimeImmutable $dateMiseCirculation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $energie = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?int $co2 = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $puissance_fiscale = null;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
+    private ?int $puissanceFiscale = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $puissance_reelle = null;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
+    private ?int $puissanceReelle = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $carrosserie = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $boite_vitesse = null;
+    #[Groups(['vehicle:read', 'vehicle:write'])]
+    private ?string $boiteVitesse = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $nb_passagers = null;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
+    private ?int $nbPassagers = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $nb_portes = null;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
+    private ?int $nbPortes = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $nom_commercial = null;
+    #[Groups(['vehicle:read', 'vehicle:write'])]
+    private ?string $nomCommercial = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $vin = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $couleur = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $logo_marque = null;
+    #[Groups(['vehicle:read', 'vehicle:write'])]
+    private ?string $logoMarque = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?int $km = null;
-
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): ?int
+    public function getUser(): User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(int $user_id): static
+    public function setUser(User $user): self
     {
-        $this->user_id = $user_id;
-
+        $this->user = $user;
         return $this;
     }
 
@@ -98,10 +115,9 @@ class Vehicle
         return $this->immat;
     }
 
-    public function setImmat(string $immat): static
+    public function setImmat(string $immat): self
     {
         $this->immat = $immat;
-
         return $this;
     }
 
@@ -110,10 +126,9 @@ class Vehicle
         return $this->marque;
     }
 
-    public function setMarque(string $marque): static
+    public function setMarque(string $marque): self
     {
         $this->marque = $marque;
-
         return $this;
     }
 
@@ -122,22 +137,20 @@ class Vehicle
         return $this->modele;
     }
 
-    public function setModele(string $modele): static
+    public function setModele(string $modele): self
     {
         $this->modele = $modele;
-
         return $this;
     }
 
     public function getDateMiseCirculation(): ?\DateTimeImmutable
     {
-        return $this->date_mise_circulation;
+        return $this->dateMiseCirculation;
     }
 
-    public function setDateMiseCirculation(?\DateTimeImmutable $date_mise_circulation): static
+    public function setDateMiseCirculation(?\DateTimeImmutable $dateMiseCirculation): self
     {
-        $this->date_mise_circulation = $date_mise_circulation;
-
+        $this->dateMiseCirculation = $dateMiseCirculation;
         return $this;
     }
 
@@ -146,10 +159,9 @@ class Vehicle
         return $this->energie;
     }
 
-    public function setEnergie(?string $energie): static
+    public function setEnergie(?string $energie): self
     {
         $this->energie = $energie;
-
         return $this;
     }
 
@@ -158,34 +170,31 @@ class Vehicle
         return $this->co2;
     }
 
-    public function setCo2(?int $co2): static
+    public function setCo2(?int $co2): self
     {
         $this->co2 = $co2;
-
         return $this;
     }
 
     public function getPuissanceFiscale(): ?int
     {
-        return $this->puissance_fiscale;
+        return $this->puissanceFiscale;
     }
 
-    public function setPuissanceFiscale(?int $puissance_fiscale): static
+    public function setPuissanceFiscale(?int $puissanceFiscale): self
     {
-        $this->puissance_fiscale = $puissance_fiscale;
-
+        $this->puissanceFiscale = $puissanceFiscale;
         return $this;
     }
 
     public function getPuissanceReelle(): ?int
     {
-        return $this->puissance_reelle;
+        return $this->puissanceReelle;
     }
 
-    public function setPuissanceReelle(?int $puissance_reelle): static
+    public function setPuissanceReelle(?int $puissanceReelle): self
     {
-        $this->puissance_reelle = $puissance_reelle;
-
+        $this->puissanceReelle = $puissanceReelle;
         return $this;
     }
 
@@ -194,58 +203,53 @@ class Vehicle
         return $this->carrosserie;
     }
 
-    public function setCarrosserie(?string $carrosserie): static
+    public function setCarrosserie(?string $carrosserie): self
     {
         $this->carrosserie = $carrosserie;
-
         return $this;
     }
 
     public function getBoiteVitesse(): ?string
     {
-        return $this->boite_vitesse;
+        return $this->boiteVitesse;
     }
 
-    public function setBoiteVitesse(?string $boite_vitesse): static
+    public function setBoiteVitesse(?string $boiteVitesse): self
     {
-        $this->boite_vitesse = $boite_vitesse;
-
+        $this->boiteVitesse = $boiteVitesse;
         return $this;
     }
 
     public function getNbPassagers(): ?int
     {
-        return $this->nb_passagers;
+        return $this->nbPassagers;
     }
 
-    public function setNbPassagers(?int $nb_passagers): static
+    public function setNbPassagers(?int $nbPassagers): self
     {
-        $this->nb_passagers = $nb_passagers;
-
+        $this->nbPassagers = $nbPassagers;
         return $this;
     }
 
     public function getNbPortes(): ?int
     {
-        return $this->nb_portes;
+        return $this->nbPortes;
     }
 
-    public function setNbPortes(?int $nb_portes): static
+    public function setNbPortes(?int $nbPortes): self
     {
-        $this->nb_portes = $nb_portes;
-
+        $this->nbPortes = $nbPortes;
         return $this;
     }
 
     public function getNomCommercial(): ?string
     {
-        return $this->nom_commercial;
+        return $this->nomCommercial;
     }
 
-    public function setNomCommercial(?string $nom_commercial): static
+    public function setNomCommercial(?string $nomCommercial): self
     {
-        $this->nom_commercial = $nom_commercial;
-
+        $this->nomCommercial = $nomCommercial;
         return $this;
     }
 
@@ -254,10 +258,9 @@ class Vehicle
         return $this->vin;
     }
 
-    public function setVin(?string $vin): static
+    public function setVin(?string $vin): self
     {
         $this->vin = $vin;
-
         return $this;
     }
 
@@ -266,22 +269,20 @@ class Vehicle
         return $this->couleur;
     }
 
-    public function setCouleur(?string $couleur): static
+    public function setCouleur(?string $couleur): self
     {
         $this->couleur = $couleur;
-
         return $this;
     }
 
     public function getLogoMarque(): ?string
     {
-        return $this->logo_marque;
+        return $this->logoMarque;
     }
 
-    public function setLogoMarque(?string $logo_marque): static
+    public function setLogoMarque(?string $logoMarque): self
     {
-        $this->logo_marque = $logo_marque;
-
+        $this->logoMarque = $logoMarque;
         return $this;
     }
 
@@ -290,21 +291,9 @@ class Vehicle
         return $this->km;
     }
 
-    public function setKm(?int $km): static
+    public function setKm(?int $km): self
     {
         $this->km = $km;
-
-        return $this;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): self
-    {
-        $this->user = $user;
         return $this;
     }
 }

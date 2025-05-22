@@ -1,16 +1,13 @@
 # --- FRONT (Next.js) ---
 front/node_modules/
 front/.next/
-front/.env.local
 front/package-lock.json
 
 # --- BACK (Symfony) ---
 back/vendor/
 back/var/
-back/.env.local
-back/.env
 
 # --- Global ---
 *.log
 .DS_Store
-.env
+
