@@ -22,7 +22,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [chatStarted, setChatStarted] = useState(false);
-  const [isMiniChatOpen, setMiniChatOpen] = useState(false); // NOUVEL ÉTAT
+  const [isMiniChatOpen, setMiniChatOpen] = useState(false)
 
   const sendMessage = (msg?: string) => {
     const text = msg ?? input.trim();

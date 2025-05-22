@@ -51,7 +51,7 @@ export default function SignUpForm({ onSwitchMode }: { onSwitchMode: () => void 
         return;
       }
 
-      onSwitchMode(); // Succès : passer à la connexion
+      onSwitchMode();
     } catch (err) {
       console.error("Erreur réseau :", err);
       setErrors({ global: "Erreur réseau. Veuillez réessayer plus tard." });

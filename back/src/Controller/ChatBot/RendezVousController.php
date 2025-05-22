@@ -27,7 +27,7 @@ class RendezVousController extends AbstractController
     {
         $payload = json_decode($request->getContent(), true);
         $message = trim($payload['message'] ?? '');
-        $address = trim($payload['address'] ?? ''); // adresse facultative
+        $address = trim($payload['address'] ?? '');
         $context = $payload['context'] ?? ['stage' => 'init', 'data' => []];
         $stage   = $context['stage'];
         $data    = $context['data'];

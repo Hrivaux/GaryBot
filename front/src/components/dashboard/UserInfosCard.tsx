@@ -65,7 +65,7 @@ const UserInfosCard: FC<Props> = ({ user }) => {
 
       alert("Modifications enregistrées !");
       closeModal();
-      location.reload(); // Ou déclencher un re-fetch si tu préfères une UX sans reload
+      location.reload();
     } catch (error) {
       console.error("Erreur lors de la mise à jour :", error);
       alert("Erreur réseau.");

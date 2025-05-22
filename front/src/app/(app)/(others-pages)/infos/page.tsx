@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import EntretienCards from "@/components/entretiens/EntretienCards"; // ajuste le chemin si besoin
+import EntretienCards from "@/components/entretiens/EntretienCards";
 
 type Entretien = {
   piece: string;

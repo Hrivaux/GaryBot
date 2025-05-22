@@ -89,5 +89,3 @@ export default function EntretienIndicatorSection({ vehicle }: Props) {
     </div>
   );
 }
-
-// installer npm install date-fns !!!!!!

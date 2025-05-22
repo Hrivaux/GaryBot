@@ -20,12 +20,8 @@ export default function EntretienIndicator({ entretien, position = 1 }: Props) {
 
   return (
     <div className="flex items-center justify-between mb-4">
-      {/* Titre entretien */}
       <span className="text-sm text-gray-800 font-medium">{entretien.piece}</span>
-
-      {/* Indicateur graphique */}
       <div className="flex flex-col items-center ml-4">
-        {/* Flèche positionnée au-dessus de la bonne barre */}
         <div className="flex gap-[6px] h-3">
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex justify-center w-4">
@@ -35,8 +31,6 @@ export default function EntretienIndicator({ entretien, position = 1 }: Props) {
             </div>
           ))}
         </div>
-
-        {/* Barres de couleur */}
         <div className="flex gap-[6px]">
           {[0, 1, 2].map((i) => (
             <div

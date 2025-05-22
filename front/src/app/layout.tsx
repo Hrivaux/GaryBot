@@ -1,10 +1,15 @@
-// app/layout.tsx
 import { Outfit } from 'next/font/google';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
+import { Metadata } from 'next';
 
 
 const outfit = Outfit({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'Gary Auto',
+};
+
 
 export default function RootLayout({
   children,

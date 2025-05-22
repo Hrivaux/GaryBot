@@ -78,9 +78,6 @@ class UserMeController extends AbstractController
             $user->setCountry($data['country']);
         }
 
-        // Ne jamais modifier l’email ici sauf si vérification prévue
-
-        // Validation des champs modifiés
         $errors = $validator->validate($user);
 
         if (count($errors) > 0) {

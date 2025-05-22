@@ -1,4 +1,3 @@
-// lib/leafletIcon.ts
 import * as L from 'leaflet';
 
 export const garageIcon = new L.Icon({

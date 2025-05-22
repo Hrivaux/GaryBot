@@ -28,13 +28,11 @@ class RegisterController
             ->setPassword($data['password'] ?? '')
         ;
 
-        // Validation basique
         $errors = $this->validator->validate($user);
         if (count($errors) > 0) {
             return new JsonResponse(['errors' => (string) $errors], 400);
         }
 
-        // Hashage du mot de passe
         $hashed = $this->hasher->hashPassword($user, $user->getPassword());
         $user->setPassword($hashed);
 

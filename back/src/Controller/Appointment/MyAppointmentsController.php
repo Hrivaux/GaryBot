@@ -54,6 +54,8 @@ class MyAppointmentsController extends AbstractController
                     'address' => $a->getGarage()->getAddress(),
                     'city' => $a->getGarage()->getCity(),
                     'zipcode' => $a->getGarage()->getZipcode(),
+                    'latitude' => $a->getGarage()->getLatitude(),
+                    'longitude' => $a->getGarage()->getLongitude(),
                 ] : null,
             ];
         }, $appointments);

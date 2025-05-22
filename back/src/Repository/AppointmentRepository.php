@@ -20,6 +20,4 @@ class AppointmentRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Appointment::class);
     }
-
-    // Ajoutez ici vos méthodes de requête personnalisées, si besoin
 }
