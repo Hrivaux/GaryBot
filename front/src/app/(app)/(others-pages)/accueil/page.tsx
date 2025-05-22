@@ -9,6 +9,7 @@ import { fetchUserInfo, UserData } from "@/services/userService";
 import { Loader2 } from "lucide-react";
 import { fetchVehicles, Vehicle } from "@/services/vehiculeService";
 
+
 export default function Dashboard() {
   const [user, setUser] = useState<UserData | null>(null);
   const [vehicules, setVehicules] = useState<Vehicle[] | null>(null);
@@ -52,6 +53,8 @@ export default function Dashboard() {
           <VehicleDocuments />
         </div>
       </div>
+
+      
     </div>
   );
 }

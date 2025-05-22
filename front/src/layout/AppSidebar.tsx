@@ -44,11 +44,6 @@ const navItems: NavItem[] = [
     path: "/garybot",
   },
   {
-    icon: <CalenderIcon />,
-    name: "Calendrier",
-    path: "/calendar",
-  },
-  {
     icon: <PageIcon />, 
     name: "Infos",
     path: "/infos", 

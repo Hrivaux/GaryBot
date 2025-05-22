@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from "react";
-import EntretienCards from "@/components/entretiens/EntretienCards"; // ajuste le chemin si besoin
+import EntretienCards from "./EntretienCards";
 
 type Entretien = {
   piece: string;
@@ -10,7 +10,7 @@ type Entretien = {
   frequence_annees: number | null;
 };
 
-export default function InfosPage() {
+export default function EntretienSection() {
   const [entretiens, setEntretiens] = useState<Entretien[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -46,17 +46,6 @@ export default function InfosPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
-          Entretien de base du véhicule
-        </h1>
-        <p className="text-center text-gray-600 mb-10 text-lg">
-          Ces opérations sont simples et peuvent être réalisées par vous-même à intervalle régulier.
-        </p>
-
-        <EntretienCards entretiens={entretiens} loading={loading} error={error} />
-      </div>
-    </div>
+    <EntretienCards entretiens={entretiens} loading={loading} error={error} />
   );
 }
