@@ -7,14 +7,18 @@ import VehicleWatchlist from "@/components/dashboard/VehicleWatchlist";
 import VehicleDocuments from "@/components/dashboard/VehicleDocuments";
 import { fetchUserInfo, UserData } from "@/services/userService";
 import { Loader2 } from "lucide-react"; // Icône de chargement
+import { fetchVehicles, Vehicle } from "@/services/vehiculeService";
 
 export default function Dashboard() {
   const [user, setUser] = useState<UserData | null>(null);
+  const [vehicules, setVehicules] = useState<Vehicle[] | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchUserInfo();
-      setUser(data);
+      const user = await fetchUserInfo();
+      const vehicles = await fetchVehicles();
+      setVehicules(vehicles);
+      setUser(user);
     };
     fetchData();
   }, []);
@@ -40,7 +44,7 @@ export default function Dashboard() {
         </div>
 
         <div className="col-span-12 xl:col-span-7 h-full">
-          <VehiculesTab />
+          <VehiculesTab vehicules={vehicules} />
         </div>
 
         <div className="col-span-12 mt-6 grid grid-cols-1 xl:grid-cols-2 gap-4 items-stretch">

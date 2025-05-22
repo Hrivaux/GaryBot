@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
   {
     icon: <TableIcon />,
     name: "Mes véhicules",
-    path: "/basic-tables"
+    path: "/vehicules"
   },
 ];
 
