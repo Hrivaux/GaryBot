@@ -19,6 +19,17 @@ interface UserAppointmentsProps {
 export default function UserAppointments({ appointments }: UserAppointmentsProps) {
   if (!appointments) return <p>Chargement...</p>;
 
+  if (!appointments || appointments.length === 0) {
+    return (
+      <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
+          Prochains rendez-vous
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400">Aucune échéances à venir.</p>
+      </div>
+    );
+  }
+
   const rdvs: RendezVous[] = appointments.map(a => ({
   id: a.id,
   dateDebut: a.startTime,
