@@ -18,6 +18,7 @@ import {
   TableIcon,
   UserCircleIcon,
 } from "../icons/index";
+import { HouseIcon } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -27,6 +28,11 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  {
+    icon: <HouseIcon />,
+    name: "Accueil",
+    path: "/accueil",
+  },
   {
     icon: <UserCircleIcon />,
     name: "Profil",
@@ -302,7 +308,7 @@ const AppSidebar: React.FC = () => {
         <Link href="/">
           <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
               GaryAuto
-            </h4>
+          </h4>
         </Link>
       </div>
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
