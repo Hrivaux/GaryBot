@@ -1,21 +1,13 @@
 "use client";
-import { FC, useEffect, useState } from "react";
-import { User } from "lucide-react"; // Icône d'avatar par défaut
-import { fetchUserInfo, UserData } from "@/services/userService";
+import { FC } from "react";
+import { User } from "lucide-react";
+import { UserData } from "@/services/userService"; // ou "@/types/user"
 
-const UserInfosCard: FC = () => {
-  const [user, setUser] = useState<UserData | null>(null);
+interface Props {
+  user: UserData;
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchUserInfo();
-      setUser(data);
-    };
-    fetchData();
-  }, []);
-
-  if (!user) return null;
-
+const UserInfosCard: FC<Props> = ({ user }) => {
   const fullName =
     user.firstname || user.lastname
       ? `${user.firstname ?? ""} ${user.lastname ?? ""}`.trim()
@@ -27,7 +19,7 @@ const UserInfosCard: FC = () => {
       : "Non renseignée";
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div className="h-full min-h-[300px] rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="px-5 pt-5 bg-white shadow-default rounded-2xl pb-6 dark:bg-gray-900 sm:px-6 sm:pt-6">
         <div className="flex items-center gap-4">
           {user.avatarUrl ? (

@@ -38,6 +38,8 @@ const rdvs: RendezVous[] = [
     garage: "Norauto - Boulogne-Billancourt",
     lien: "#rdv-3",
   },
+  
+  
 ];
 
 export default function VehicleWatchlist() {
