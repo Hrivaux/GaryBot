@@ -3,6 +3,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useChat } from '@/context/ChatContext';
+import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { garageIcon } from '@/lib/leafletIcon';
+
+
 
 // Type pour la réponse de l'API Vehicle
 interface VehicleResponse {
@@ -64,7 +69,7 @@ async function getDynamicPrompt(
       break;
   }
     const SYSTEM_CONCISE = 'Tu es GaryBot, un assistant automobile chaleureux et concis : réponses en une seule phrase, max 15 mots, sans formules longue.';
-      const res = await fetch('https://localhost:8000/api/chat', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
     body: JSON.stringify({
@@ -79,6 +84,16 @@ async function getDynamicPrompt(
 }
 
 const ChatBot: React.FC = () => {
+    const [garageList, setGarageList] = useState<Array<{
+    name: string;
+    address: string;
+    city: string;
+    zipcode: string;
+    latitude: number;
+    longitude: number;
+    distance: number;
+  }> | null>(null);
+
   const { messages, input, setInput, sendMessage, resetChat, chatStarted } = useChat();
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -87,6 +102,18 @@ const ChatBot: React.FC = () => {
   const [vehicleStep, setVehicleStep] = useState<number>(0);
   const [vehicleData, setVehicleData] = useState<{ immat: string; km: number }>({ immat: '', km: 0 });
   const [vehicleMessages, setVehicleMessages] = useState<{ from: 'bot' | 'user'; text: string }[]>([]);
+  const [findingGarage, setFindingGarage] = useState(false);
+  const [garageMessages, setGarageMessages] = useState<{ from: 'bot' | 'user'; text: string }[]>([]);
+  
+const startGarageSearch = async () => {
+  console.log("🔍 Recherche garage déclenchée"); // ← ajoute ceci
+  setFindingGarage(true);
+  setInput('');
+  setGarageMessages([
+    { from: 'bot', text: "Quel est votre emplacement ou votre adresse pour trouver un garage à proximité ?" }
+  ]);
+};
+
 
   // État pour stocker le dernier véhicule créé
   const [lastVehicle, setLastVehicle] = useState<{
@@ -98,10 +125,16 @@ const ChatBot: React.FC = () => {
   } | null>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, vehicleMessages]);
+  bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+}, [messages, vehicleMessages, garageMessages]); // ← Ajout ici
+
 
   const handleBack = () => {
+    if (findingGarage) {
+  setFindingGarage(false);
+  setGarageMessages([]);
+}
+
     if (addingVehicle) {
       setAddingVehicle(false);
       setVehicleStep(0);
@@ -129,6 +162,58 @@ const ChatBot: React.FC = () => {
   // Soumission du formulaire
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (findingGarage) {
+      console.log("💬 Formulaire soumis", { input, addingVehicle, findingGarage });
+
+  const raw = input.trim();
+  if (!raw) return;
+
+  setGarageMessages((ms) => [...ms, { from: 'user', text: raw }]);
+  setInput('');
+
+  const token = localStorage.getItem('token');
+
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/find-garage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ message: raw })
+    });
+
+    const data = await res.json();
+
+    if (Array.isArray(data.garages)) {
+  setGarageList(data.garages); // ⬅️ stocke pour l’affichage carte + liste
+
+  for (const garage of data.garages) {
+    const garageInfo = `${garage.name}, ${garage.address}, ${garage.zipcode} ${garage.city} (${garage.distance} km)`;
+    setGarageMessages((ms) => [...ms, { from: 'bot', text: garageInfo }]);
+  }
+}
+
+    if (!res.ok) {
+      setGarageMessages((ms) => [...ms, { from: 'bot', text: data.reply || "Erreur lors de la recherche." }]);
+      return;
+    }
+
+    setGarageMessages((ms) => [...ms, { from: 'bot', text: data.reply }]);
+
+    if (Array.isArray(data.garages)) {
+      for (const garage of data.garages) {
+        const garageInfo = `${garage.name}, ${garage.address}, ${garage.zipcode} ${garage.city} (${garage.distance} km)`;
+        setGarageMessages((ms) => [...ms, { from: 'bot', text: garageInfo }]);
+      }
+    }
+  } catch (error) {
+    setGarageMessages((ms) => [...ms, { from: 'bot', text: "Erreur réseau. Veuillez réessayer." }]);
+  }
+
+  return;
+}
+
 
     if (addingVehicle) {
       const raw = input.trim().toUpperCase();
@@ -166,7 +251,7 @@ const ChatBot: React.FC = () => {
 
         const token = localStorage.getItem('token');
         try {
-          const res = await fetch('https://localhost:8000/api/vehicles', {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/vehicles`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/ld+json',
@@ -175,6 +260,7 @@ const ChatBot: React.FC = () => {
             },
             body: JSON.stringify({ immat: vehicleData.immat, km })
           });
+
           if (!res.ok) throw new Error(await res.text());
           const json = await res.json() as VehicleResponse;
 
@@ -200,9 +286,10 @@ const ChatBot: React.FC = () => {
     // Chat IA standard
     sendMessage();
   };
+  
 
   // Menu principal
-  if (!chatStarted && !addingVehicle) {
+if (!chatStarted && !addingVehicle && !findingGarage) {
     return (
       <div className="w-full max-w-3xl mx-auto h-[70vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
         <header className="flex items-center gap-2 bg-brand-500 text-white px-5 py-3 font-semibold text-lg rounded-t-xl">
@@ -222,6 +309,17 @@ const ChatBot: React.FC = () => {
                 <div className="text-sm text-gray-600 dark:text-gray-400">Enregistrer plaque et kilométrage</div>
               </div>
             </button>
+            <button
+  onClick={() => void startGarageSearch()}
+  className="flex items-center p-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition text-left"
+>
+  <span className="text-3xl mr-3">🧭</span>
+  <div>
+    <div className="font-semibold text-gray-900 dark:text-white">Trouver un garage</div>
+    <div className="text-sm text-gray-600 dark:text-gray-400">Les 5 plus proches de chez vous</div>
+  </div>
+</button>
+
           </div>
         </div>
       </div>
@@ -229,7 +327,11 @@ const ChatBot: React.FC = () => {
   }
 
   // Chat et affichage des messages + card
-  const activeMessages = addingVehicle ? vehicleMessages : messages;
+const activeMessages = addingVehicle
+  ? vehicleMessages
+  : findingGarage
+  ? garageMessages
+  : messages;
   return (
     <div className="w-full max-w-3xl mx-auto h-[70vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
       <header className="flex items-center gap-3 bg-brand-500 text-white px-5 py-3 rounded-t-xl">
@@ -245,6 +347,47 @@ const ChatBot: React.FC = () => {
             </div>
           </div>
         ))}
+{findingGarage && garageList && (
+  <div className="mt-4 space-y-4">
+    <div className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-md border">
+      <h4 className="text-md font-semibold mb-2 text-gray-800 dark:text-white">📍 Garages les plus proches :</h4>
+      <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
+        {garageList.map((g, i) => (
+          <li key={i} className="border-b border-gray-200 dark:border-gray-600 pb-2">
+            <strong>{g.name}</strong><br />
+            {g.address}, {g.zipcode} {g.city} <br />
+            <em>{g.distance} km</em>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    {/* Carte */}
+            <div className="h-[300px] w-full rounded-lg overflow-hidden shadow border border-gray-300 dark:border-gray-700">
+              <MapContainer
+                center={[garageList[0].latitude, garageList[0].longitude]}
+                zoom={10}
+                scrollWheelZoom={false}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  attribution='&copy; OpenStreetMap'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {garageList.map((g, i) => (
+                  <Marker key={i} position={[g.latitude, g.longitude]} icon={garageIcon}>
+                    <Popup>
+                      <strong>{g.name}</strong><br />
+                      {g.address}<br />
+                      {g.zipcode} {g.city}<br />
+                      {g.distance} km
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          </div>
+        )}
 
         {/* Card de confirmation */}
         {lastVehicle && (

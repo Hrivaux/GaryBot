@@ -37,6 +37,35 @@ export default function VehicleManager() {
   const [km, setKm] = useState('');
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+
+
+  const handleDeleteVehicle = async () => {
+  if (!vehicleToDelete) return;
+  const token = localStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/vehicles/${vehicleToDelete.id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      console.error('Erreur suppression véhicule');
+      return;
+    }
+
+    setVehicles((prev) => prev.filter((v) => v.id !== vehicleToDelete.id));
+    setIsDeleteModalOpen(false);
+    setVehicleToDelete(null);
+  } catch (err) {
+    console.error("Erreur réseau lors de la suppression :", err);
+  }
+};
 
   const fetchVehicles = async () => {
     const token = localStorage.getItem('token');
@@ -148,30 +177,56 @@ export default function VehicleManager() {
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {vehicles.map((v) => (
-          <Card key={v.id} className="p-4 shadow-md border rounded-xl bg-white dark:bg-gray-800">
-            <div className="flex items-center gap-4 mb-2">
-              {v.logoMarque && (
-                <img src={v.logoMarque} alt="Logo" className="w-12 h-12 object-contain" />
-              )}
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{v.marque} {v.modele}</h3>
-                <p className="text-sm text-gray-500">{v.immat}</p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-700 dark:text-gray-300">VIN : {v.vin}</p>
-            <p className="text-sm text-gray-700 dark:text-gray-300">Kilomètre : {v.km}</p>
+          <Card key={v.id} className="relative p-5 shadow-md border rounded-xl bg-white dark:bg-gray-800 hover:shadow-lg transition">
+  {/* Bouton de suppression (croix) */}
+  <button
+    onClick={() => {
+      setVehicleToDelete(v);
+      setIsDeleteModalOpen(true);
+    }}
+    className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-xl font-bold"
+    title="Supprimer le véhicule"
+  >
+    ×
+  </button>
 
-            <Button
-              className="mt-4"
-              size="sm"
-              onClick={() => {
-                setSelectedVehicle(v);
-                setIsDetailModalOpen(true);
-              }}
-            >
-              Détails
-            </Button>
-          </Card>
+  {/* En-tête avec logo et info principale */}
+  <div className="flex items-center gap-4 mb-3">
+    {v.logoMarque && (
+      <img
+        src={v.logoMarque}
+        alt={`${v.marque} logo`}
+        className="w-12 h-12 object-contain rounded"
+      />
+    )}
+    <div>
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+        {v.marque} {v.modele}
+      </h3>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{v.immat}</p>
+    </div>
+  </div>
+
+  {/* Infos secondaires */}
+  <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+    <p><span className="font-medium">VIN :</span> {v.vin}</p>
+    <p><span className="font-medium">Kilométrage :</span> {v.km.toLocaleString()} km</p>
+  </div>
+
+  {/* Bouton "Détails" */}
+  <div className="mt-4 flex justify-end">
+    <Button
+      size="sm"
+      onClick={() => {
+        setSelectedVehicle(v);
+        setIsDetailModalOpen(true);
+      }}
+    >
+      Détails
+    </Button>
+  </div>
+</Card>
+
         ))}
       </div>
 
@@ -241,6 +296,26 @@ export default function VehicleManager() {
           </div>
         )}
       </Modal>
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} className="max-w-md">
+  <div className="p-6 space-y-4">
+    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+      Supprimer le véhicule ?
+    </h3>
+    <p className="text-sm text-gray-600 dark:text-gray-300">
+      Êtes-vous sûr de vouloir supprimer ce véhicule&nbsp;?
+      Cette action est irréversible.
+    </p>
+    <div className="flex justify-end gap-2 mt-4">
+      <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+        Annuler
+      </Button>
+      <Button variant="outline" onClick={handleDeleteVehicle}>
+        Supprimer
+      </Button>
+    </div>
+  </div>
+</Modal>
+
     </div>
   );
 }
