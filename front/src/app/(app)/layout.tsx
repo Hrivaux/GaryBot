@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { ChatProvider, useChat } from '@/context/ChatContext';
 import { usePathname } from 'next/navigation';
 import FloatingChatButton from '@/components/chabot/FloatingChatButton';
-import AppSidebar from '@/layout/AppSidebar'; // <== n'oublie ça si sidebar doit s'afficher
+import AppSidebar from '@/layout/AppSidebar'; 
 import { useEffect } from 'react';
 
 const outfit = Outfit({ subsets: ['latin'] });
