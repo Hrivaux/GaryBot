@@ -5,8 +5,9 @@ import dynamic from "next/dynamic";
 import Button from "../ui/button/Button";
 import { Modal } from "../ui/modal";
 import { Loader2 } from "lucide-react";
+import { generateDevisPDF } from "@/services/pdfService";
 
-interface RendezVous {
+export interface RendezVous {
   id: number;
   dateDebut: string;
   dateFin: string;
@@ -29,12 +30,9 @@ interface UserAppointmentsProps {
 }
 
 const MapLoader = () => (
-  
   <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
     <Loader2 className="animate-spin h-10 w-10 mb-4 text-gray-500" />
-    <p>
-    Chargement de la carte...
-    </p>
+    <p>Chargement de la carte...</p>
   </div>
 );
 
@@ -55,7 +53,7 @@ export default function UserAppointments({ appointments }: UserAppointmentsProps
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
           Prochains rendez-vous
         </h3>
-        <p className="text-gray-600 dark:text-gray-400">Aucune échéances à venir.</p>
+        <p className="text-gray-600 dark:text-gray-400">Aucune échéance à venir.</p>
       </div>
     );
   }
@@ -89,7 +87,6 @@ export default function UserAppointments({ appointments }: UserAppointmentsProps
     setIsOpen(false);
     setSelectedRdv(null);
   };
-
   return (
     <>
       <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
@@ -99,21 +96,32 @@ export default function UserAppointments({ appointments }: UserAppointmentsProps
         <ul className="space-y-4">
           {rdvs.map((rdv) => (
             <li key={rdv.id}>
-              <a
+              <div
+                className="flex items-center justify-between gap-4 rounded-lg border border-gray-100 bg-gray-50 p-4 transition hover:bg-gray-100 dark:border-gray-700 dark:bg-white/[0.02] dark:hover:bg-white/[0.05] cursor-pointer"
                 onClick={() => openModal(rdv)}
-                className="block rounded-lg border border-gray-100 bg-gray-50 p-4 transition hover:bg-gray-100 dark:border-gray-700 dark:bg-white/[0.02] dark:hover:bg-white/[0.05] cursor-pointer"
               >
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  📅 <strong>{new Date(rdv.dateDebut).toLocaleString("fr-FR")}</strong> — Fin:{" "}
-                  {new Date(rdv.dateFin).toLocaleString("fr-FR")}
-                </p>
-                <p className="text-gray-800 font-medium dark:text-white">
-                  🚗 {rdv.immatriculation} – {rdv.modele}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 italic">
-                  📍 {rdv.garage ? `${rdv.garage.name}, ${rdv.garage.address}, ${rdv.garage.city}` : "N/A"}
-                </p>
-              </a>
+                <div className="flex flex-col">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    📅 <strong>{new Date(rdv.dateDebut).toLocaleString("fr-FR")}</strong> — Fin :{" "}
+                    {new Date(rdv.dateFin).toLocaleString("fr-FR")}
+                  </p>
+                  <p className="text-gray-800 font-medium dark:text-white">
+                    🚗 {rdv.immatriculation} – {rdv.modele}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 italic">
+                    📍 {rdv.garage ? `${rdv.garage.name}, ${rdv.garage.address}, ${rdv.garage.city}` : "N/A"}
+                  </p>
+                </div>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    generateDevisPDF(rdv);
+                  }}
+                >
+                 📄 Générer Devis
+                </Button>
+
+              </div>
             </li>
           ))}
         </ul>
@@ -176,7 +184,13 @@ export default function UserAppointments({ appointments }: UserAppointmentsProps
               )}
             </div>
 
-            <div className="flex justify-end mt-6">
+            <div className="flex justify-end mt-6 gap-2">
+              <Button
+                size="sm"
+                onClick={() => selectedRdv && generateDevisPDF(selectedRdv)}
+              >
+                📄 Générer Devis
+              </Button>
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Fermer
               </Button>
