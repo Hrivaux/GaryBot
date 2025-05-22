@@ -2,10 +2,13 @@
 front/node_modules/
 front/.next/
 front/package-lock.json
-
+front/package.json
 # --- BACK (Symfony) ---
 back/vendor/
 back/var/
+# .gitignore
+back/.env
+back/.env.local
 
 # --- Global ---
 *.log

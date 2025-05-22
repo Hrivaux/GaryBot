@@ -122,4 +122,39 @@ class OpenAiService
 
         return $decoded;
     }
+
+    public function detectIntent(string $message): ?array
+{
+    $prompt = "L'utilisateur écrit : \"$message\". Est-ce qu’il s’agit d’une demande pour prendre rendez-vous dans un garage ? " .
+              "Si oui, indique le nom du garage s’il est mentionné. " .
+              "Réponds en JSON avec les clés : intent (take_appointment ou other) et garageName.";
+
+    $response = $this->client->request('POST', 'https://api.openai.com/v1/chat/completions', [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $this->openAiApiKey,
+            'Content-Type' => 'application/json',
+        ],
+        'json' => [
+            'model' => 'gpt-3.5-turbo',
+            'messages' => [
+                ['role' => 'system', 'content' => 'Tu es un assistant qui détecte les intentions dans un message utilisateur.'],
+                ['role' => 'user', 'content' => $prompt],
+            ],
+            'temperature' => 0.2,
+        ],
+    ]);
+
+    $data = $response->toArray(false);
+    $content = trim($data['choices'][0]['message']['content'] ?? '');
+
+    // Essaye de parser la réponse comme JSON
+    $result = json_decode($content, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($result)) {
+        return null;
+    }
+
+    return $result;
+}
+
 }
