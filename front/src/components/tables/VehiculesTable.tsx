@@ -16,6 +16,7 @@ export default function VehicleManager() {
   const [immat, setImmat] = useState('');
   const [km, setKm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
 useEffect(() => {
   const loadVehicles = async () => {
@@ -28,12 +29,26 @@ useEffect(() => {
 
   const handleAddVehicle = async () => {
     const token = localStorage.getItem('token');
-    if (!token || !immat || !km) return;
+    setFormError(null);
+
+    if (!token) {
+      setFormError("Utilisateur non authentifié.");
+      return;
+    }
+
+    if (!immat.trim()) {
+      setFormError("L'immatriculation est requise.");
+      return;
+    }
 
     const parsedKm = parseInt(km, 10);
-    if (isNaN(parsedKm)) return alert('Le kilométrage doit être un nombre.');
+    if (!km.trim() || isNaN(parsedKm) || parsedKm < 0) {
+      setFormError("Le kilométrage doit être un nombre valide.");
+      return;
+    }
 
     setLoading(true);
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/vehicles`, {
         method: 'POST',
@@ -44,13 +59,19 @@ useEffect(() => {
         body: JSON.stringify({ immat, km: parsedKm }),
       });
 
+      if (!res.ok) {
+        const err = await res.json();
+        setFormError(err.message || "Erreur lors de l'ajout du véhicule.");
+        return;
+      }
+
       const newVehicle = await res.json();
       setVehicles((prev) => [...prev, newVehicle]);
       setIsAddModalOpen(false);
       setImmat('');
       setKm('');
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      setFormError("Erreur réseau. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
@@ -101,6 +122,8 @@ useEffect(() => {
               </div>
             </div>
             <p className="text-sm text-gray-700 dark:text-gray-300">VIN : {v.vin}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300">Kilomètre : {v.km}</p>
+
             <Button
               className="mt-4"
               size="sm"
@@ -115,17 +138,15 @@ useEffect(() => {
         ))}
       </div>
 
-      {/* Modal d'ajout */}
       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} className="max-w-md">
         <div className="p-6">
           <h3 className="text-lg font-semibold mb-4">Ajouter un véhicule</h3>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAddVehicle();
-            }}
-            className="space-y-4"
-          >
+          <form onSubmit={(e) => { e.preventDefault(); handleAddVehicle(); }} className="space-y-4">
+            {formError && (
+              <div className="text-sm text-red-600 bg-red-100 border border-red-300 rounded p-2">
+                {formError}
+              </div>
+            )}
             <Input
               type="text"
               placeholder="Immatriculation"
@@ -147,7 +168,6 @@ useEffect(() => {
         </div>
       </Modal>
 
-      {/* Modal de détail */}
       <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} className="max-w-2xl">
         {selectedVehicle && (
           <div className="p-6 space-y-3">

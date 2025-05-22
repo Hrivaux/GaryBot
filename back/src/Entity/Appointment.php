@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use App\Entity\User;
 use App\Entity\Vehicle;
 use App\Entity\Operations;
+use App\Entity\Concessions;
 
 #[ORM\Entity]
 #[ApiResource(
@@ -70,6 +71,11 @@ class Appointment
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['appointment:read', 'appointment:write'])]
     private ?Operations $operation = null;
+
+    #[ORM\ManyToOne(targetEntity: Concessions::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['appointment:read', 'appointment:write'])]
+    private ?Concessions $garage = null;
 
     public function getId(): ?int
     {
@@ -142,13 +148,24 @@ class Appointment
         return $this;
     }
 
+    public function getGarage(): ?Concessions
+    {
+        return $this->garage;
+    }
+
+    public function setGarage(?Concessions $garage): self
+    {
+        $this->garage = $garage;
+        return $this;
+    }
+
     #[ORM\PrePersist]
     public function prePersist(): void
     {
         if ($this->endTime <= $this->startTime) {
             throw new \InvalidArgumentException('Le créneau doit avoir une fin après le début.');
         }
-        // assure que isBooked est bien à false par défaut
+
         $this->isBooked = false;
     }
 }
