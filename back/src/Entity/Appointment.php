@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Filter\BooleanFilter;
 use ApiPlatform\Filter\DateFilter;
+use App\Controller\Appointment\MyAppointmentsController;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Entity\User;

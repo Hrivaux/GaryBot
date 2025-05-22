@@ -33,3 +33,28 @@ export const fetchUserInfo = async (): Promise<UserData | null> => {
     return null;
   }
 };
+
+
+export const fetchUserAppointments = async (): Promise<any[]> => {
+  const token = localStorage.getItem('token');
+  if (!token) return [];
+
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/me/appointments`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      console.error('Erreur API /me/appointments:', err);
+      return [];
+    }
+
+    const data = await res.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error('Erreur réseau /me/vehicles:', error);
+    return [];
+  }
+};
