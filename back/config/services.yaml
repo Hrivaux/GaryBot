@@ -46,5 +46,11 @@ services:
     autoconfigure: true
     arguments:
       $plaqueApiToken: "%env(PLAQUE_API_TOKEN)%"
+
+  OpenAI\Client:
+        factory: ['OpenAI', 'client']
+        arguments:
+            - '%env(OPENAI_API_KEY)%'
+        public: true    # ou false si tu n'as pas besoin d'y accéder directement
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
