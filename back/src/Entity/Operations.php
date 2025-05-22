@@ -5,6 +5,8 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\OperationsRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 #[ORM\Entity(repositoryClass: OperationsRepository::class)]
 #[ApiResource]
@@ -13,25 +15,33 @@ class Operations
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['appointment:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['appointment:read'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['appointment:read'])]
     private ?string $category = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['appointment:read'])]
     private ?string $additionnal_help = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['appointment:read'])]
     private ?string $additionnal_comment = null;
 
     #[ORM\Column]
+    #[Groups(['appointment:read'])]
     private ?int $time_unit = null;
 
     #[ORM\Column]
+    #[Groups(['appointment:read'])]
     private ?int $price = null;
+
 
     public function getId(): ?int
     {

@@ -24,15 +24,19 @@ class Vehicle
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['vehicle:read', 'appointment:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'appointment:read'])]
     private ?string $immat = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'appointment:read'])]
     private ?string $marque = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['vehicle:read', 'appointment:read'])]
     private ?string $modele = null;
 
     #[ORM\Column(nullable: true, type: 'datetime_immutable')]

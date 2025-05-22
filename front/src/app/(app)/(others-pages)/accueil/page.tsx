@@ -3,22 +3,25 @@
 import React, { useEffect, useState } from "react";
 import UserInfosCard from "@/components/dashboard/UserInfosCard";
 import VehiculesTab from "@/components/dashboard/VehiculesTab";
-import VehicleWatchlist from "@/components/dashboard/VehicleWatchlist";
+import UserAppointments from "@/components/dashboard/UserAppointments";
 import VehicleDocuments from "@/components/dashboard/VehicleDocuments";
-import { fetchUserInfo, UserData } from "@/services/userService";
+import { fetchUserAppointments, fetchUserInfo, UserData } from "@/services/userService";
 import { Loader2 } from "lucide-react";
 import { fetchVehicles, Vehicle } from "@/services/vehiculeService";
 
 export default function Dashboard() {
   const [user, setUser] = useState<UserData | null>(null);
   const [vehicules, setVehicules] = useState<Vehicle[] | null>(null);
+  const [appointments, setAppointments] = useState<any[] | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       const user = await fetchUserInfo();
       const vehicles = await fetchVehicles();
+      const userAppointments = await fetchUserAppointments() 
       setVehicules(vehicles);
       setUser(user);
+      setAppointments(userAppointments);
     };
     fetchData();
   }, []);
@@ -48,7 +51,7 @@ export default function Dashboard() {
         </div>
 
         <div className="col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
-          <VehicleWatchlist />
+          <UserAppointments  appointments={appointments}/>
           <VehicleDocuments />
         </div>
       </div>
