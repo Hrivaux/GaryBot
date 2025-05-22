@@ -33,7 +33,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
 
-  const shouldShowSidebar = pathname !== '/auth'; // ou "/" si c’est ta page login
+  const shouldShowSidebar = pathname !== '/auth'; 
   const shouldShowFloatingChat = pathname !== '/garybot';
 
   return (

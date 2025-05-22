@@ -5,28 +5,8 @@ import Button from '@/components/ui/button/Button';
 import Input from '@/components/form/input/InputField';
 import { Modal } from '@/components/ui/modal';
 import { Card } from '@/components/ui/card';
+import { Vehicle, fetchVehicles } from '@/services/vehiculeService';
 
-// Type du véhicule
-type Vehicle = {
-  id: number;
-  immat: string;
-  marque: string;
-  modele: string;
-  dateMiseCirculation: string;
-  energie: string;
-  co2: number;
-  puissanceFiscale: number;
-  puissanceReelle: number;
-  carrosserie: string;
-  boiteVitesse: string;
-  nbPassagers: number;
-  nbPortes: number;
-  nomCommercial: string;
-  vin: string;
-  couleur: string;
-  logoMarque: string;
-  km: number;
-};
 
 export default function VehicleManager() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -67,31 +47,14 @@ export default function VehicleManager() {
   }
 };
 
-  const fetchVehicles = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/me/vehicles`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        console.error('Erreur API /me/vehicles:', err);
-        return;
-      }
-
-      const data = await res.json();
-      setVehicles(data);
-    } catch (error) {
-      console.error('Erreur réseau /me/vehicles:', error);
-    }
+useEffect(() => {
+  const loadVehicles = async () => {
+    const data = await fetchVehicles();
+    setVehicles(data);
   };
+  loadVehicles();
+}, []);
 
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
 
   const handleAddVehicle = async () => {
     const token = localStorage.getItem('token');
