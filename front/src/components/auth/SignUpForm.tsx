@@ -13,59 +13,77 @@ export default function SignUpForm({ onSwitchMode }: { onSwitchMode: () => void 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; global?: string }>({});
+
+  const validate = () => {
+    const newErrors: typeof errors = {};
+
+    if (!email) newErrors.email = "L'email est requis.";
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email invalide.";
+
+    if (!password) newErrors.password = "Mot de passe requis.";
+    else if (password.length < 6) newErrors.password = "Au moins 6 caractères.";
+
+    if (!confirmPassword) newErrors.confirmPassword = "Confirmez le mot de passe.";
+    else if (password !== confirmPassword) newErrors.confirmPassword = "Les mots de passe ne correspondent pas.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
-      return;
-    }
+    if (!validate()) return;
 
     try {
-     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/register`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-
       const data = await res.json();
 
       if (!res.ok) {
         console.error("Erreur d'inscription :", data);
-        alert("Erreur lors de l'inscription.");
+        setErrors({ global: data.message || "Erreur lors de l'inscription." });
         return;
       }
 
-      alert("Compte créé avec succès !");
-      onSwitchMode(); // Revenir à la page de connexion
-
+      onSwitchMode(); // Succès : passer à la connexion
     } catch (err) {
       console.error("Erreur réseau :", err);
-      alert("Erreur réseau.");
+      setErrors({ global: "Erreur réseau. Veuillez réessayer plus tard." });
     }
   };
 
   return (
-    <div className="flex flex-col flex-1 lg:w-1/2 w-full">
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto pt-10">
+    <div className="flex items-center justify-center rounded-2xl p-12 bg-white dark:bg-gray-900">
+      <div className="flex flex-col w-full max-w-md">
         <h1 className="mb-2 font-semibold text-gray-800 dark:text-white/90 text-title-md">
           S'inscrire
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
           Entrez votre email et mot de passe pour créer un compte.
         </p>
+
+        {errors.global && (
+          <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 border border-red-300 rounded">
+            {errors.global}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label>Email <span className="text-error-500">*</span></Label>
             <Input
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="exemple@email.com"
+              error={!!errors.email}
+              hint={errors.email}
             />
           </div>
 
@@ -74,11 +92,11 @@ export default function SignUpForm({ onSwitchMode }: { onSwitchMode: () => void 
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
-                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mot de passe"
-                error={!!error}
+                error={!!errors.password}
+                hint={errors.password}
               />
               <span
                 onClick={() => setShowPassword(!showPassword)}
@@ -94,12 +112,11 @@ export default function SignUpForm({ onSwitchMode }: { onSwitchMode: () => void 
             <div className="relative">
               <Input
                 type={showConfirm ? "text" : "password"}
-                required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Répétez le mot de passe"
-                error={!!error}
-                hint={error}
+                error={!!errors.confirmPassword}
+                hint={errors.confirmPassword}
               />
               <span
                 onClick={() => setShowConfirm(!showConfirm)}

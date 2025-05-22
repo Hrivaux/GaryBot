@@ -6,50 +6,60 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; // 👈 import important
+import { useRouter } from "next/navigation";
 
 export default function SignInForm({ onSwitchMode }: { onSwitchMode: () => void }) {
-  const router = useRouter(); // 👈 hook pour redirection
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<{ email?: string; password?: string; global?: string }>({});
+
+  const validate = () => {
+    const newErrors: typeof errors = {};
+
+    if (!email) newErrors.email = "L'email est requis.";
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email invalide.";
+
+    if (!password) newErrors.password = "Mot de passe requis.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!validate()) return;
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        });
-
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
         console.error("Erreur de connexion :", data.error || data);
-        alert("Email ou mot de passe invalide.");
+        setErrors({ global: data.error || "Email ou mot de passe invalide." });
         return;
       }
 
       localStorage.setItem("token", data.token);
       console.log("Connexion réussie. Token :", data.token);
-
-      // ✅ Redirection après connexion réussie
-      router.push("/accueil"); // ← adapte cette route si nécessaire
-
+      router.push("/accueil");
     } catch (error) {
       console.error("Erreur réseau :", error);
-      alert("Erreur réseau lors de la tentative de connexion.");
+      setErrors({ global: "Erreur réseau. Veuillez réessayer plus tard." });
     }
   };
 
   return (
-    <div className="flex flex-col flex-1 lg:w-1/2 w-full">
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+    <div className="flex items-center justify-center rounded-2xl p-12 bg-white dark:bg-gray-900">
+      <div className="flex flex-col justify-center w-full max-w-md">
         <div className="mb-5 sm:mb-8">
           <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
             Connexion
@@ -58,6 +68,13 @@ export default function SignInForm({ onSwitchMode }: { onSwitchMode: () => void 
             Renseignez vos identifiants pour vous connecter!
           </p>
         </div>
+
+        {errors.global && (
+          <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 border border-red-300 rounded">
+            {errors.global}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             <div>
@@ -65,20 +82,23 @@ export default function SignInForm({ onSwitchMode }: { onSwitchMode: () => void 
               <Input
                 placeholder="info@gmail.com"
                 type="email"
-                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                error={!!errors.email}
+                hint={errors.email}
               />
             </div>
+
             <div>
               <Label>Mot de passe <span className="text-error-500">*</span></Label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="Entrez votre mot de passe"
-                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  error={!!errors.password}
+                  hint={errors.password}
                 />
                 <span
                   onClick={() => setShowPassword(!showPassword)}
@@ -92,13 +112,15 @@ export default function SignInForm({ onSwitchMode }: { onSwitchMode: () => void 
                 </span>
               </div>
             </div>
+
             <Button className="w-full" size="sm" type="submit">
               Connexion
             </Button>
           </div>
         </form>
+
         <div className="mt-5 text-sm text-center text-gray-700 dark:text-gray-400">
-          Vous n'avez pas de compte?{" "}
+          Vous n'avez pas de compte ?{" "}
           <button
             onClick={onSwitchMode}
             className="text-brand-500 hover:text-brand-600 dark:text-brand-400 underline"
