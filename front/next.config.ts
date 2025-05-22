@@ -21,6 +21,9 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+   images: {
+    domains: ['api.apiplaqueimmatriculation.com'],
+  },
 };
 
 export default nextConfig;
