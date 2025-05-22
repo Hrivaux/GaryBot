@@ -7,8 +7,11 @@ use App\Repository\VehicleRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Entity\User;
+use ApiPlatform\Metadata\Post;
+use App\State\VehicleStateProcessor;
 
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
+#[Post(processor: VehicleStateProcessor::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['vehicle:read']],
     denormalizationContext: ['groups' => ['vehicle:write']]
