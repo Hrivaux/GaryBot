@@ -35,28 +35,22 @@ export default function RootLayout({
   const shouldShowFloatingChat = pathname !== '/garybot';
 
   return (
-    <html lang="fr">
-      <body className={`${outfit.className} dark:bg-gray-900`}>
-        <ThemeProvider>
-          <SidebarProvider>
-            <ChatProvider>
-              <ChatRouteHandler />
+    <ThemeProvider>
+      <SidebarProvider>
+        <ChatProvider>
+          <ChatRouteHandler />
 
-              {shouldShowSidebar && <AppSidebar />}
+          {shouldShowSidebar && <AppSidebar />}
 
-              <main
-                className={`transition-all ${
-                  shouldShowSidebar ? 'lg:ml-[290px]' : ''
-                }`}
-              >
-                {children}
-              </main>
+          <main
+            className={`transition-all ${shouldShowSidebar ? 'lg:ml-[290px]' : ''} ${outfit.className} dark:bg-gray-900`}
+          >
+            {children}
+          </main>
 
-              {shouldShowFloatingChat && <FloatingChatButton />}
-            </ChatProvider>
-          </SidebarProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+          {shouldShowFloatingChat && <FloatingChatButton />}
+        </ChatProvider>
+      </SidebarProvider>
+    </ThemeProvider>
   );
 }
