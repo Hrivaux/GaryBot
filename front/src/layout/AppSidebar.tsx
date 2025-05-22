@@ -19,6 +19,8 @@ import {
   UserCircleIcon,
 } from "../icons/index";
 import { HouseIcon } from "lucide-react";
+import { destroyCookie } from "nookies";
+import { useRouter } from 'next/navigation';
 
 type NavItem = {
   name: string;
@@ -89,6 +91,13 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    destroyCookie(null, 'auth_token');
+    router.push("/");
+  };
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -326,10 +335,7 @@ const AppSidebar: React.FC = () => {
       </div>
             <div className="mt-auto mb-6">
         <button
-          onClick={() => {
-            localStorage.removeItem("token");
-            window.location.href = "/";
-          }}
+           onClick={handleLogout}
           className="flex items-center gap-2 w-full text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-md transition"
         >
           <svg

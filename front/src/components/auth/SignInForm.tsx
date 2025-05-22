@@ -1,13 +1,12 @@
 'use client';
 
-import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-
+import { setCookie } from 'nookies';   
 export default function SignInForm({ onSwitchMode }: { onSwitchMode: () => void }) {
   const router = useRouter();
 
@@ -47,6 +46,12 @@ export default function SignInForm({ onSwitchMode }: { onSwitchMode: () => void 
         setErrors({ global: data.error || "Email ou mot de passe invalide." });
         return;
       }
+
+      setCookie(null, 'auth_token', data.token, {
+        maxAge: 60 * 60 * 24,
+        path: '/',           
+      });
+      router.push('/accueil');
 
       localStorage.setItem("token", data.token);
       console.log("Connexion réussie. Token :", data.token);
