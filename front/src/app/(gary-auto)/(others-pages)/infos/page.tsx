@@ -1,55 +1,48 @@
-"use client";
+'use client';
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+type Entretien = {
+  piece: string;
+  description: string;
+  frequence_km: number | null;
+  frequence_annees: number | null;
+};
 
 export default function Infos() {
-  const entretiens = [
-    {
-      titre: "🔋 Batterie",
-      description: "Recharge si faible. Change tous les 4–5 ans.",
-      frequence: "Tous les 4–5 ans",
-    },
-    {
-      titre: "🛢️ Huile moteur",
-      description: "Vérifie le niveau avec la jauge. Complète ou change tous les 10 000 km.",
-      frequence: "Tous les 10 000 km",
-    },
-    {
-      titre: "💧 Liquide de frein",
-      description: "Doit être clair et à bon niveau. À changer tous les 2 ans.",
-      frequence: "Tous les 2 ans",
-    },
-    {
-      titre: "🌬️ Filtre à air",
-      description: "Remplace tous les 20 000 km ou plus souvent en milieu poussiéreux.",
-      frequence: "Tous les 20 000 km",
-    },
-    {
-      titre: "🚗 Pneus",
-      description: "Vérifie la pression chaque mois. Contrôle l’usure et remplace si nécessaire.",
-      frequence: "Tous les mois",
-    },
-    {
-      titre: "💦 Essuie-glaces",
-      description: "Remplace si traces ou grincements. Idéalement tous les 6 à 12 mois.",
-      frequence: "6–12 mois",
-    },
-    {
-      titre: "🌡️ Liquide de refroidissement",
-      description: "Vérifie le niveau régulièrement. Change tous les 2 à 4 ans.",
-      frequence: "2–4 ans",
-    },
-    {
-      titre: "🧼 Filtre habitacle",
-      description: "Change tous les 15 000 à 20 000 km. Améliore l’air intérieur.",
-      frequence: "15–20 000 km",
-    },
-    {
-      titre: "🧴 Lave-glace",
-      description: "Complète régulièrement, surtout en hiver.",
-      frequence: "Tous les mois",
-    },
-  ];
+  const [entretiens, setEntretiens] = useState<Entretien[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchEntretiens = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Token manquant");
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/entretiens`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Erreur serveur : ${text}`);
+        }
+
+        const data = await response.json();
+        setEntretiens(data);
+      } catch (err) {
+        setError("Impossible de charger les entretiens.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEntretiens();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
@@ -61,18 +54,29 @@ export default function Infos() {
           Ces opérations sont simples et peuvent être réalisées par vous-même à intervalle régulier.
         </p>
 
+        {loading && <p className="text-center text-gray-500">Chargement des entretiens...</p>}
+        {error && <p className="text-center text-red-500">{error}</p>}
+        {!loading && entretiens.length === 0 && (
+          <p className="text-center text-gray-500">Aucun entretien à afficher.</p>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {entretiens.map((item, index) => (
             <div
               key={index}
-              className="bg-purple-100 text-purple-900 border border-purple-300 rounded-xl p-8 text-center shadow-md transition transform duration-300 hover:scale-105"
+              className="bg-[#e6ebff] text-[#3c4fcb] border border-[#c4ceff] rounded-xl p-8 text-center shadow-md transition transform duration-300 hover:scale-105"
               title={item.description}
             >
-              <h2 className="text-3xl font-bold mb-4">{item.titre}</h2>
+              <h2 className="text-3xl font-bold mb-4">{item.piece}</h2>
               <p className="text-lg font-medium mb-3">{item.description}</p>
-              <span className="inline-block bg-purple-200 text-purple-900 text-sm font-semibold px-3 py-1 rounded-full">
-                {item.frequence}
-              </span>
+
+              {(item.frequence_km || item.frequence_annees) && (
+                <span className="inline-block bg-[#d6dcff] text-[#3c4fcb] text-sm font-semibold px-3 py-1 rounded-full">
+                  {item.frequence_km
+                    ? `Tous les ${item.frequence_km.toLocaleString()} km`
+                    : `Tous les ${item.frequence_annees} an(s)`}
+                </span>
+              )}
             </div>
           ))}
         </div>
