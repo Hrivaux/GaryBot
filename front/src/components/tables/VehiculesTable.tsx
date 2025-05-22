@@ -6,6 +6,7 @@ import Input from '@/components/form/input/InputField';
 import { Modal } from '@/components/ui/modal';
 import { Card } from '@/components/ui/card';
 import { Vehicle, fetchVehicles } from '@/services/vehiculeService';
+import EntretienIndicatorSection from "@/components/entretiens/EntretienIndicatorSection";
 
 
 export default function VehicleManager() {
@@ -18,14 +19,13 @@ export default function VehicleManager() {
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-useEffect(() => {
-  const loadVehicles = async () => {
-    const data = await fetchVehicles();
-    setVehicles(data);
-  };
-  loadVehicles();
-}, []);
-
+  useEffect(() => {
+    const loadVehicles = async () => {
+      const data = await fetchVehicles();
+      setVehicles(data);
+    };
+    loadVehicles();
+  }, []);
 
   const handleAddVehicle = async () => {
     const token = localStorage.getItem('token');
@@ -186,6 +186,7 @@ useEffect(() => {
               <p><strong>Nb passagers:</strong> {selectedVehicle.nbPassagers}</p>
               <p><strong>Nb portes:</strong> {selectedVehicle.nbPortes}</p>
               <p><strong>Nom commercial:</strong> {selectedVehicle.nomCommercial}</p>
+
               <div className="col-span-2">
                 <label className="text-sm">Kilométrage</label>
                 <Input
@@ -195,8 +196,14 @@ useEffect(() => {
                     setSelectedVehicle({ ...selectedVehicle, km: parseInt(e.target.value, 10) || 0 })
                   }
                 />
+
+                {/* 👇 Indicateur d'entretien placé sous le champ kilométrage */}
+                <div className="mt-4">
+                  <EntretienIndicatorSection vehicle={selectedVehicle} />
+                </div>
               </div>
             </div>
+
             <div className="flex justify-end mt-4 gap-2">
               <Button variant="outline" onClick={() => setIsDetailModalOpen(false)}>Fermer</Button>
               <Button onClick={handleKmUpdate}>Mettre à jour les KM</Button>
