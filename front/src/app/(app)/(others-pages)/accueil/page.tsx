@@ -41,23 +41,19 @@ export default function Dashboard() {
       <h1 className="mt-2 mb-8 text-center text-6xl font-bold text-gray-800 dark:text-white/90">
         Tableau de bord
       </h1>
-
       <div className="grid grid-cols-12 gap-6 items-stretch">
-        <div className="col-span-12 xl:col-span-5 h-full">
+        <div className="col-span-12 xl:col-span-6 h-full">
           <UserInfosCard user={user} />
         </div>
 
-        <div className="col-span-12 xl:col-span-7 h-full">
+        <div className="col-span-12 xl:col-span-6 h-full">
           <VehiculesTab vehicules={vehicules} />
         </div>
 
-        <div className="col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
-          <UserAppointments  appointments={appointments}/>
-          <VehicleDocuments />
+        <div className="col-span-12">
+          <UserAppointments appointments={appointments} />
         </div>
-      </div>
-
-      
+      </div>      
     </div>
   );
 }
