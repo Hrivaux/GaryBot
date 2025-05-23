@@ -49,22 +49,23 @@ class ConcessionRepository extends ServiceEntityRepository
 
         // 2. Trouver les 5 garages les plus proches dans ce département uniquement
         $sql = <<<SQL
-        SELECT name, address, city, zipcode, latitude, longitude, (
-            6371 * acos(
-                cos(radians(:lat)) *
-                cos(radians(latitude)) *
-                cos(radians(longitude) - radians(:lon)) +
-                sin(radians(:lat)) *
-                sin(radians(latitude))
-            )
-        ) AS distance
-        FROM concessions
-        WHERE zipcode LIKE :dept
-          AND latitude IS NOT NULL
-          AND longitude IS NOT NULL
-        ORDER BY distance ASC
-        LIMIT 5
-    SQL;
+    SELECT id, name, address, city, zipcode, latitude, longitude, (
+        6371 * acos(
+            cos(radians(:lat)) *
+            cos(radians(latitude)) *
+            cos(radians(longitude) - radians(:lon)) +
+            sin(radians(:lat)) *
+            sin(radians(latitude))
+        )
+    ) AS distance
+    FROM concessions
+    WHERE zipcode LIKE :dept
+      AND latitude IS NOT NULL
+      AND longitude IS NOT NULL
+    ORDER BY distance ASC
+    LIMIT 5
+SQL;
+
 
         $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery([

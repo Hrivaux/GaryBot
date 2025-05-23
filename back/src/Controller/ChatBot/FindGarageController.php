@@ -71,6 +71,7 @@ class FindGarageController extends AbstractController
         return $this->json([
             'reply' => "Voici les 5 garages les plus proches dans votre département :",
             'garages' => array_map(fn($g) => [
+                'id' => $g['id'], // ✅ AJOUT ESSENTIEL
                 'name' => $g['name'],
                 'address' => $g['address'],
                 'city' => $g['city'],
@@ -80,5 +81,6 @@ class FindGarageController extends AbstractController
                 'distance' => round($g['distance'], 2)
             ], $garages)
         ]);
+
     }
 }
