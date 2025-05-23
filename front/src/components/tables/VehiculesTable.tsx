@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Vehicle, fetchVehicles } from '@/services/vehiculeService';
 import EntretienIndicatorSection from "@/components/entretiens/EntretienIndicatorSection";
 import { Plus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function VehicleManager() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -20,6 +21,39 @@ export default function VehicleManager() {
   const [formError, setFormError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+  const [previsions, setPrevisions] = useState<any>(null)
+  const [isForecastModalOpen, setIsForecastModalOpen] = useState(false);
+  const [loadingForecastVehicleId, setLoadingForecastVehicleId] = useState<number | null>(null);
+
+
+  const fetchPrevisions = async (vehicleId: number) => {
+    setLoadingForecastVehicleId(vehicleId);
+  const token = localStorage.getItem('token');
+  if (!token) {
+    setLoadingForecastVehicleId(null);
+    return;
+  }
+    
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/vehicles/${vehicleId}/maintenance-ai`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) throw new Error('Erreur lors du chargement des prévisions.');
+
+    const data = await res.json();
+    setPrevisions(data.forecast);
+    setIsDetailModalOpen(false); 
+    setIsForecastModalOpen(true); 
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoadingForecastVehicleId(null);
+  }
+};
+
 
 
   const handleDeleteVehicle = async () => {
@@ -147,54 +181,64 @@ export default function VehicleManager() {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {vehicles.map((v) => (
           <Card key={v.id} className="relative p-5 shadow-md border rounded-xl bg-white dark:bg-gray-800 hover:shadow-lg transition">
-  {/* Bouton de suppression (croix) */}
-  <button
-    onClick={() => {
-      setVehicleToDelete(v);
-      setIsDeleteModalOpen(true);
-    }}
-    className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-xl font-bold"
-    title="Supprimer le véhicule"
-  >
-    ×
-  </button>
+          {/* Bouton de suppression (croix) */}
+          <button
+            onClick={() => {
+              setVehicleToDelete(v);
+              setIsDeleteModalOpen(true);
+            }}
+            className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-xl font-bold"
+            title="Supprimer le véhicule"
+          >
+            ×
+          </button>
 
-  {/* En-tête avec logo et info principale */}
-  <div className="flex items-center gap-4 mb-3">
-    {v.logoMarque && (
-      <img
-        src={v.logoMarque}
-        alt={`${v.marque} logo`}
-        className="w-12 h-12 object-contain rounded"
-      />
-    )}
-    <div>
-      <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-        {v.marque} {v.modele}
-      </h3>
-      <p className="text-xs text-gray-500 dark:text-gray-400">{v.immat}</p>
-    </div>
-  </div>
+          {/* En-tête avec logo et info principale */}
+          <div className="flex items-center gap-4 mb-3">
+            {v.logoMarque && (
+              <img
+                src={v.logoMarque}
+                alt={`${v.marque} logo`}
+                className="w-12 h-12 object-contain rounded"
+              />
+            )}
+            <div>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                {v.marque} {v.modele}
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{v.immat}</p>
+            </div>
+          </div>
 
-  {/* Infos secondaires */}
-  <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-    <p><span className="font-medium">VIN :</span> {v.vin}</p>
-    <p><span className="font-medium">Kilométrage :</span> {v.km.toLocaleString()} km</p>
-  </div>
+          {/* Infos secondaires */}
+          <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+            <p><span className="font-medium">VIN :</span> {v.vin}</p>
+            <p><span className="font-medium">Kilométrage :</span> {v.km.toLocaleString()} km</p>
+          </div>
 
-  {/* Bouton "Détails" */}
-  <div className="mt-4 flex justify-end">
-    <Button
-      size="sm"
-      onClick={() => {
-        setSelectedVehicle(v);
-        setIsDetailModalOpen(true);
-      }}
-    >
-      Détails
-    </Button>
-  </div>
-</Card>
+          {/* Bouton "Détails" */}
+          <div className="mt-4 flex justify-end gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                setSelectedVehicle(v);
+                setIsDetailModalOpen(true);
+              }}
+            >
+              Détails
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => fetchPrevisions(v.id!)}
+              disabled={loadingForecastVehicleId === v.id}
+            >
+              {loadingForecastVehicleId === v.id ? <Loader2 className="animate-spin h-5 w-5 text-gray-500" />
+              : 'Prévisions'}
+            </Button>
+          </div>
+
+        </Card>
 
         ))}
       </div>
@@ -273,24 +317,51 @@ export default function VehicleManager() {
         )}
       </Modal>
       <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} className="max-w-md">
+      <div className="p-6 space-y-4">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+          Supprimer le véhicule ?
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Êtes-vous sûr de vouloir supprimer ce véhicule&nbsp;?
+          Cette action est irréversible.
+        </p>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+            Annuler
+          </Button>
+          <Button variant="outline" onClick={handleDeleteVehicle}>
+            Supprimer
+          </Button>
+        </div>
+      </div>
+    </Modal>
+
+    <Modal isOpen={isForecastModalOpen} onClose={() => setIsForecastModalOpen(false)} className="max-w-xl">
   <div className="p-6 space-y-4">
-    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-      Supprimer le véhicule ?
-    </h3>
-    <p className="text-sm text-gray-600 dark:text-gray-300">
-      Êtes-vous sûr de vouloir supprimer ce véhicule&nbsp;?
-      Cette action est irréversible.
-    </p>
-    <div className="flex justify-end gap-2 mt-4">
-      <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
-        Annuler
-      </Button>
-      <Button variant="outline" onClick={handleDeleteVehicle}>
-        Supprimer
-      </Button>
+    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Prévisions de maintenance</h3>
+    {!previsions ? (
+      <p className="text-sm text-gray-600 dark:text-gray-300">Chargement en cours...</p>
+    ) : previsions.length === 0 ? (
+      <p className="text-sm text-gray-600 dark:text-gray-300">Aucune prévision disponible.</p>
+    ) : (
+      <ul className="space-y-3">
+        {previsions.map((forecast: any, index: number) => (
+          <li key={index} className="p-3 rounded bg-gray-100 dark:bg-gray-800">
+            <p className="font-medium text-gray-800 dark:text-white">{forecast.task}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              📅 {forecast.estimated_date} — 🚗 {forecast.estimated_km?.toLocaleString() ?? 'N/A'} km
+            </p>
+
+          </li>
+        ))}
+      </ul>
+    )}
+    <div className="flex justify-end pt-4">
+      <Button variant="outline" onClick={() => setIsForecastModalOpen(false)}>Fermer</Button>
     </div>
   </div>
 </Modal>
+
 
     </div>
   );
