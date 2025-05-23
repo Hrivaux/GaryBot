@@ -305,11 +305,19 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link href="/">
-          <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              GaryAuto
-          </h4>
-        </Link>
+        {isExpanded || isHovered || isMobileOpen ? (
+            <Link href="/">
+              <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+                  Gary Auto
+              </h4>
+            </Link>
+          ) : (
+            <Link href="/">
+              <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+                  GA
+              </h4>
+            </Link>
+          )}
       </div>
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">

@@ -26,7 +26,7 @@ export default function EntretienIndicator({ entretien, position = 1 }: Props) {
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex justify-center w-4">
               {position === i && (
-                <div className="w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-black mb-1" />
+                <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black mt-1" />
               )}
             </div>
           ))}

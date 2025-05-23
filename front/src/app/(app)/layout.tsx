@@ -50,7 +50,7 @@ export default function RootLayout({
             {children}
           </main>
 
-          {shouldShowFloatingChat && <FloatingChatButton />}
+          {/* {shouldShowFloatingChat && <FloatingChatButton />} */}
         </ChatProvider>
       </SidebarProvider>
     </ThemeProvider>

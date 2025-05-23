@@ -83,7 +83,6 @@ async function getDynamicPrompt(
   return reply;
 }
 
-// ⬇️ ⬇️ ⬇️ Place-la ici avant le composant principal ⬇️ ⬇️ ⬇️
 async function detectIntentAndGarage(userInput: string) {
   const token = localStorage.getItem('token');
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/detect-intent`, {
@@ -249,7 +248,7 @@ const operations = [
 ];
 
 const startGarageSearch = async () => {
-  console.log("🔍 Recherche garage déclenchée"); // ← ajoute ceci
+  console.log("🔍 Recherche garage déclenchée"); 
   setFindingGarage(true);
   setInput('');
   setGarageMessages([
@@ -269,7 +268,7 @@ const startGarageSearch = async () => {
 
   useEffect(() => {
   bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-}, [messages, vehicleMessages, garageMessages]); // ← Ajout ici
+}, [messages, vehicleMessages, garageMessages]);
 
 
   const handleBack = () => {
@@ -286,7 +285,6 @@ const startGarageSearch = async () => {
     resetChat();
   };
 
-  // Démarre le workflow d'ajout avec prompt dynamique (welcome + askPlate)
   const startAddVehicle = async () => {
     setAddingVehicle(true);
     setVehicleStep(1);
@@ -531,11 +529,10 @@ const startGarageSearch = async () => {
 
   
 
-  // Menu principal
 if (!chatStarted && !addingVehicle && !findingGarage) {
     return (
-<div className="w-full h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
-     <header className="flex items-center gap-2 bg-brand-500 text-white px-5 py-3 font-semibold text-lg rounded-t-xl">
+      <div className="w-full h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
+        <header className="flex items-center gap-2 bg-brand-500 text-white px-5 py-3 font-semibold text-lg rounded-t-xl">
           <span className="text-2xl">💬</span>
           <span>GaryBot</span>
         </header>
@@ -569,13 +566,14 @@ if (!chatStarted && !addingVehicle && !findingGarage) {
     );
   }
 
-  // Chat et affichage des messages + card
 const activeMessages = addingVehicle
   ? vehicleMessages
   : findingGarage
   ? garageMessages
   : messages;
   return (
+    <div className="w-full h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
+      <header className="flex items-center gap-3 bg-brand-500 text-white px-5 py-3 rounded-t-xl">
 <div className="w-full h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">      <header className="flex items-center gap-3 bg-brand-500 text-white px-5 py-3 rounded-t-xl">
         <button onClick={handleBack} aria-label="Retour au menu" className="flex items-center justify-center w-9 h-9 rounded-full bg-white/30 hover:bg-white/50 transition text-white">←</button>
         <span className="text-2xl">💬</span><span>GaryBot</span>

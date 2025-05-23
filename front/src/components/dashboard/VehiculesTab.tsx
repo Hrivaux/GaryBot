@@ -32,61 +32,67 @@ const VehiculesTab: FC<Props> = ({ vehicules }) => {
         </div>
       ) : (
         <div className="max-w-full overflow-x-auto">
-          <Table>
-            <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
-              <TableRow>
-                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Marque / Modèle
-                </TableCell>
-                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Énergie
-                </TableCell>
-                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Puissance
-                </TableCell>
-                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Kilométrage
-                </TableCell>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {vehicules.map((v) => (
-                <TableRow key={v.id}>
-                  <TableCell className="py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-[50px] w-[50px] overflow-hidden rounded-md">
-                        <Image
-                          width={50}
-                          height={50}
-                          src={v.logoMarque || "/fallback-car.png"}
-                          className="h-[50px] w-[50px] object-contain"
-                          alt={v.marque}
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {v.marque}
-                        </p>
-                        <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                          {v.modele}
-                        </span>
-                      </div>
-                    </div>
+          <div
+            className={`overflow-y-auto ${
+              vehicules.length > 3 ? "max-h-[200px]" : ""
+            }`}
+          >
+            <Table>
+              <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
+                <TableRow className="sticky top-0 z-10 bg-white dark:bg-white/[0.03]">
+                  <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    Marque / Modèle
                   </TableCell>
-                  <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {v.energie}
+                  <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    Énergie
                   </TableCell>
-                  <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {v.puissanceReelle}
+                  <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    Puissance
                   </TableCell>
-                  <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {v.km !== null ? `${v.km} km` : "Non renseigné"}
+                  <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                    Kilométrage
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+
+              <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {vehicules.map((v) => (
+                  <TableRow key={v.id}>
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-[50px] w-[50px] overflow-hidden rounded-md">
+                          <Image
+                            width={50}
+                            height={50}
+                            src={v.logoMarque || "/fallback-car.png"}
+                            className="h-[50px] w-[50px] object-contain"
+                            alt={v.marque}
+                          />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                            {v.marque}
+                          </p>
+                          <span className="text-gray-500 text-theme-xs dark:text-gray-400">
+                            {v.modele}
+                          </span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {v.energie}
+                    </TableCell>
+                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {v.puissanceReelle}
+                    </TableCell>
+                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {v.km !== null ? `${v.km} km` : "Non renseigné"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
     </div>
