@@ -7,7 +7,7 @@ import { Modal } from '@/components/ui/modal';
 import { Card } from '@/components/ui/card';
 import { Vehicle, fetchVehicles } from '@/services/vehiculeService';
 import EntretienIndicatorSection from "@/components/entretiens/EntretienIndicatorSection";
-
+import { Plus } from "lucide-react";
 
 export default function VehicleManager() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -135,7 +135,13 @@ export default function VehicleManager() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Mes véhicules</h2>
-        <Button onClick={() => setIsAddModalOpen(true)}>➕ Ajouter un véhicule</Button>
+
+
+      <Button onClick={() => setIsAddModalOpen(true)} className="text-white flex items-center gap-2">
+        <Plus className="w-5 h-5 text-white" />
+        Ajouter un véhicule
+      </Button>
+
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -83,7 +83,6 @@ async function getDynamicPrompt(
   return reply;
 }
 
-// ⬇️ ⬇️ ⬇️ Place-la ici avant le composant principal ⬇️ ⬇️ ⬇️
 async function detectIntentAndGarage(userInput: string) {
   const token = localStorage.getItem('token');
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/detect-intent`, {
@@ -207,7 +206,7 @@ const operations = [
   },
 ];
 const startGarageSearch = async () => {
-  console.log("🔍 Recherche garage déclenchée"); // ← ajoute ceci
+  console.log("🔍 Recherche garage déclenchée"); 
   setFindingGarage(true);
   setInput('');
   setGarageMessages([
@@ -227,7 +226,7 @@ const startGarageSearch = async () => {
 
   useEffect(() => {
   bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-}, [messages, vehicleMessages, garageMessages]); // ← Ajout ici
+}, [messages, vehicleMessages, garageMessages]);
 
 
   const handleBack = () => {
@@ -244,7 +243,6 @@ const startGarageSearch = async () => {
     resetChat();
   };
 
-  // Démarre le workflow d'ajout avec prompt dynamique (welcome + askPlate)
   const startAddVehicle = async () => {
     setAddingVehicle(true);
     setVehicleStep(1);
@@ -269,9 +267,8 @@ const startGarageSearch = async () => {
   const raw = input.trim();
 if (!raw) return;
 
-// 🔍 Détection d'intention intelligente
 const intentData = await detectIntentAndGarage(raw);
-console.log("🎯 INTENTION DÉTECTÉE :", intentData); // 👈 ajoute ça
+console.log("🎯 INTENTION DÉTECTÉE :", intentData);
 if (intentData?.intent === 'take_appointment' && garageList && intentData.garageName) {
   const match = garageList.find(g =>
     g.name.toLowerCase().includes(intentData.garageName.toLowerCase()) ||
@@ -309,7 +306,7 @@ if (findingGarage && garageList) {
   if (match) {
     setGarageMessages(ms => [...ms, { from: 'user', text: input }]);
     setInput('');
-    setSelectedGarage(match); // ← tu ajoutes ce nouvel état
+    setSelectedGarage(match);
     return;
   }
 }
@@ -407,7 +404,6 @@ if (findingGarage && garageList) {
           if (!res.ok) throw new Error(await res.text());
           const json = await res.json() as VehicleResponse;
 
-          // Succès
           const successMsg = await getDynamicPrompt('success');
           setLastVehicle({
             nomCommercial: json.nomCommercial,
@@ -426,15 +422,13 @@ if (findingGarage && garageList) {
       }
     }
 
-    // Chat IA standard
     sendMessage();
   };
   
 
-  // Menu principal
 if (!chatStarted && !addingVehicle && !findingGarage) {
     return (
-      <div className="w-full max-w-3xl mx-auto h-[70vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
+      <div className="w-full h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
         <header className="flex items-center gap-2 bg-brand-500 text-white px-5 py-3 font-semibold text-lg rounded-t-xl">
           <span className="text-2xl">💬</span>
           <span>GaryBot</span>
@@ -469,14 +463,13 @@ if (!chatStarted && !addingVehicle && !findingGarage) {
     );
   }
 
-  // Chat et affichage des messages + card
 const activeMessages = addingVehicle
   ? vehicleMessages
   : findingGarage
   ? garageMessages
   : messages;
   return (
-    <div className="w-full max-w-3xl mx-auto h-[70vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
+    <div className="w-full h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
       <header className="flex items-center gap-3 bg-brand-500 text-white px-5 py-3 rounded-t-xl">
         <button onClick={handleBack} aria-label="Retour au menu" className="flex items-center justify-center w-9 h-9 rounded-full bg-white/30 hover:bg-white/50 transition text-white">←</button>
         <span className="text-2xl">💬</span><span>GaryBot</span>
@@ -490,20 +483,20 @@ const activeMessages = addingVehicle
             </div>
           </div>
         ))}
-{findingGarage && garageList && (
-  <div className="mt-4 space-y-4">
-    <div className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-md border">
-      <h4 className="text-md font-semibold mb-2 text-gray-800 dark:text-white">📍 Garages les plus proches :</h4>
-      <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
-        {garageList.map((g, i) => (
-          <li key={i} className="border-b border-gray-200 dark:border-gray-600 pb-2">
-            <strong>{g.name}</strong><br />
-            {g.address}, {g.zipcode} {g.city} <br />
-            <em>{g.distance} km</em>
-          </li>
-        ))}
-      </ul>
-    </div>
+        {findingGarage && garageList && (
+          <div className="mt-4 space-y-4">
+            <div className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-md border">
+              <h4 className="text-md font-semibold mb-2 text-gray-800 dark:text-white">📍 Garages les plus proches :</h4>
+              <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
+                {garageList.map((g, i) => (
+                  <li key={i} className="border-b border-gray-200 dark:border-gray-600 pb-2">
+                    <strong>{g.name}</strong><br />
+                    {g.address}, {g.zipcode} {g.city} <br />
+                    <em>{g.distance} km</em>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
               {/* Carte */}
             <div className="h-[300px] w-full rounded-lg overflow-hidden shadow border border-gray-300 dark:border-gray-700">
@@ -575,7 +568,7 @@ const activeMessages = addingVehicle
             body: JSON.stringify({
               garage_id: selectedGarage.id,
               operation_id: selectedOperation.id,
-              date // Tu peux rajouter une heure ensuite ici
+              date 
             })
           });
 
