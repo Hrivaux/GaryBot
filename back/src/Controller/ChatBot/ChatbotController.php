@@ -20,50 +20,51 @@ class ChatbotController extends AbstractController
     #[Route('/api/chatbot/message', name: 'api_chatbot_message', methods: ['POST'])]
     public function chatbot(Request $request): JsonResponse
     {
-        // 1. Authentification
         $user = $this->getUser();
         if (!$user) {
             return $this->json(['error' => 'Utilisateur non connecté.'], 401);
         }
 
-        // 2. Lecture du message
         $data    = json_decode($request->getContent(), true);
         $message = trim($data['message'] ?? '');
-        if ('' === $message) {
+
+        if ($message === '') {
             return $this->json(['error' => 'Message manquant.'], 400);
         }
 
-        // 3. Charger le catalogue depuis la BDD
-        $ops       = $this->em->getRepository(Operations::class)->findAll();
-        $catalogue = array_map(fn(Operations $o) => $o->getName(), $ops);
-        $catalogueText = implode("\n", $catalogue);
+        // Charger le catalogue
+        $operations = $this->em->getRepository(Operations::class)->findAll();
+        $catalogueText = implode("\n", array_map(fn($o) => $o->getName(), $operations));
 
-        // 4. Construire le prompt système pour GPT
-        $system = <<<TXT
-Tu es un assistant automobile. Tu dois toujours répondre en JSON valide, avec les champs :
+        // Prompt amélioré
+        $systemPrompt = <<<PROMPT
+Tu es un assistant automobile intelligent. Tu dois TOUJOURS répondre en JSON strictement valide, avec cette structure :
+
 {
   "operation": "Nom de l'opération choisie ou null",
-  "questions": ["liste", "de", "questions", "..."],
-  "alternatives": ["op1","op2",...]
+  "questions": ["question utile 1", "question utile 2"],
+  "alternatives": ["option 1", "option 2"]
 }
-Règles à suivre :
-1) Si l'utilisateur dit "bonjour", tu réponds par une question de type :
-   "Bonjour, avez-vous un problème avec votre voiture ?"
-   et tu fournis comme alternatives ["Oui","Non"].
-2) Si l'utilisateur répond "Oui", tu poses une question pour qu'il décrive son problème.
-3) Si l'utilisateur répond "Non", tu termines poliment la conversation sans proposer d'opération.
-4) Si l'utilisateur décrit un problème, tu identifies la meilleure opération dans le catalogue ou tu poses des questions complémentaires.
-5) Tu peux proposer jusqu'à 10 alternatives si tu n'arrives pas à choisir une seule.
-Catalogue disponible :
-$catalogueText
-TXT;
 
+Règles strictes :
+1. Commence toujours par : "Bonjour, avez-vous un problème avec votre voiture ?" + alternatives ["Oui","Non"].
+2. Si l'utilisateur dit "oui", demande une description courte du problème.
+3. Dès qu'un symptôme clair est donné (ex : "bruit au freinage", "la voiture tire à droite"), IDENTIFIE une opération du catalogue ou propose max 3 alternatives concrètes.
+4. Tu n'as droit qu'à **2 questions maximum** avant de faire une **suggestion d'opération**.
+5. Ne boucle JAMAIS. Ne pose JAMAIS deux fois une question proche (ex : “Pouvez-vous décrire” deux fois).
+6. Si l'utilisateur est déjà très clair, propose immédiatement une opération (comme “Service plaquettes de frein”).
+7. Tu ne peux proposer une opération que si elle existe EXACTEMENT (ou partiellement) dans ce catalogue :
+
+$catalogueText
+
+PROMPT;
+
+        // Appel GPT
         $prompt = [
-            ['role' => 'system', 'content' => $system],
+            ['role' => 'system', 'content' => $systemPrompt],
             ['role' => 'user',   'content' => $message],
         ];
 
-        // 5. Appel à l'API OpenAI
         $response = $this->client->request('POST', 'https://api.openai.com/v1/chat/completions', [
             'headers' => [
                 'Authorization' => 'Bearer ' . $_ENV['OPENAI_API_KEY'],
@@ -72,69 +73,66 @@ TXT;
             'json' => [
                 'model'       => 'gpt-4-turbo',
                 'messages'    => $prompt,
-                'temperature' => 0.5,
+                'temperature' => 0.4,
             ],
         ]);
 
         $result  = $response->toArray(false);
-        $content = $result['choices'][0]['message']['content'] ?? '';
-        $iaData  = json_decode($content, true);
+        $content = $result['choices'][0]['message']['content'] ?? '{}';
+        $aiData  = json_decode($content, true);
 
-        // 6. Si GPT renvoie une opération, aller la chercher en BDD pour extraire le prix, etc.
-        $opName    = $iaData['operation'] ?? null;
+        $operationName = $aiData['operation'] ?? null;
         $operation = null;
-        if ($opName) {
-    $operation = $this->em->createQueryBuilder()
-        ->select('o')
-        ->from(Operations::class, 'o')
-        ->where('LOWER(o.name) LIKE :name')
-        ->setParameter('name', '%' . strtolower($opName) . '%')
-        ->setMaxResults(1)
-        ->getQuery()
-        ->getOneOrNullResult();
-}
 
+        if ($operationName) {
+            $operation = $this->em->createQueryBuilder()
+                ->select('o')
+                ->from(Operations::class, 'o')
+                ->where('LOWER(o.name) LIKE :name')
+                ->setParameter('name', '%' . strtolower($operationName) . '%')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+        }
 
-        // 7. Construire la réponse finale
         if ($operation) {
-            // Si on a trouvé l'opération en BDD, on renvoie ses détails
-            $responseData = [
+            return $this->json([
                 'operation'          => $operation->getName(),
                 'price'              => $operation->getPrice(),
                 'time_unit'          => $operation->getTimeUnit(),
                 'additional_help'    => $operation->getAdditionnalHelp(),
                 'additional_comment' => $operation->getAdditionnalComment(),
-                'questions'          => $iaData['questions']    ?? [],
-                'alternatives'       => [],  // plus d'alternatives si l'opération est confirmée
-            ];
-        } else {
-            // Sinon, on reprend ce que GPT a retourné, ou on fait un fallback LIKE
-            $questions    = $iaData['questions']    ?? [];
-            $alternatives = $iaData['alternatives'] ?? [];
-
-            if (empty($alternatives)) {
-                $kw = substr(preg_replace('/\W+/', ' ', $message), 0, 20);
-                $qb = $this->em->createQueryBuilder();
-                $qb->select('o')
-                    ->from(Operations::class, 'o')
-                    ->where($qb->expr()->like('o.name', ':kw'))
-                    ->setParameter('kw', "%$kw%")
-                    ->setMaxResults(5);
-                $found = $qb->getQuery()->getResult();
-                $alternatives = array_map(fn(Operations $o) => $o->getName(), $found);
-            }
-
-            $responseData = [
-                'operation'          => null,
-                'price'              => null,
-                'time_unit'          => null,
-                'additional_help'    => null,
-                'additional_comment' => null,
-                'questions'          => $questions,
-                'alternatives'       => $alternatives,
-            ];
+                'questions'          => $aiData['questions']    ?? [],
+                'alternatives'       => [],
+            ]);
         }
 
-        return $this->json($responseData);
+        // Si aucune opération trouvée : fallback
+        $questions    = $aiData['questions']    ?? [];
+        $alternatives = $aiData['alternatives'] ?? [];
+
+        if (empty($alternatives)) {
+            $keywords = substr(preg_replace('/\W+/', ' ', $message), 0, 30);
+            $found = $this->em->createQueryBuilder()
+                ->select('o')
+                ->from(Operations::class, 'o')
+                ->where('LOWER(o.name) LIKE :kw')
+                ->setParameter('kw', '%' . strtolower($keywords) . '%')
+                ->setMaxResults(3)
+                ->getQuery()
+                ->getResult();
+
+            $alternatives = array_map(fn(Operations $o) => $o->getName(), $found);
+        }
+
+        return $this->json([
+            'operation'          => null,
+            'price'              => null,
+            'time_unit'          => null,
+            'additional_help'    => null,
+            'additional_comment' => null,
+            'questions'          => $questions,
+            'alternatives'       => $alternatives,
+        ]);
     }
 }
