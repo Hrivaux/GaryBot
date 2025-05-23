@@ -516,13 +516,6 @@ const startGarageSearch = async () => {
   setGarageMessages(ms => [...ms, ...responses]);
   return;
 }
-
-
-
-
-
-
-
   // 5️⃣ — Sinon, fallback sur le chat standard
   sendMessage();
 };
@@ -574,7 +567,6 @@ const activeMessages = addingVehicle
   return (
     <div className="w-full h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
       <header className="flex items-center gap-3 bg-brand-500 text-white px-5 py-3 rounded-t-xl">
-<div className="w-full h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">      <header className="flex items-center gap-3 bg-brand-500 text-white px-5 py-3 rounded-t-xl">
         <button onClick={handleBack} aria-label="Retour au menu" className="flex items-center justify-center w-9 h-9 rounded-full bg-white/30 hover:bg-white/50 transition text-white">←</button>
         <span className="text-2xl">💬</span><span>GaryBot</span>
       </header>
