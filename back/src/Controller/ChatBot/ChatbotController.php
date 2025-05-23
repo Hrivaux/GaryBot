@@ -84,10 +84,16 @@ TXT;
         $opName    = $iaData['operation'] ?? null;
         $operation = null;
         if ($opName) {
-            $operation = $this->em
-                ->getRepository(Operations::class)
-                ->findOneBy(['name' => $opName]);
-        }
+    $operation = $this->em->createQueryBuilder()
+        ->select('o')
+        ->from(Operations::class, 'o')
+        ->where('LOWER(o.name) LIKE :name')
+        ->setParameter('name', '%' . strtolower($opName) . '%')
+        ->setMaxResults(1)
+        ->getQuery()
+        ->getOneOrNullResult();
+}
+
 
         // 7. Construire la réponse finale
         if ($operation) {

@@ -156,5 +156,51 @@ class OpenAiService
 
     return $result;
 }
+public function suggestOperation(string $message): ?array
+{
+    $prompt = <<<PROMPT
+Tu es un assistant automobile. Voici la liste des opérations disponibles :
+1. Batterie — Recharge si faible. À changer tous les 4 à 5 ans.
+2. Huile moteur — Compléter ou changer tous les 10 000 km.
+3. Liquide de frein — À changer tous les 2 ans.
+4. Filtre à air — Changer tous les 20 000 km.
+5. Pneus — Vérifier mensuellement. Remplacer si usés.
+6. Essuie-glaces — Changer tous les 6 à 12 mois.
+7. Liquide de refroidissement — Changer tous les 2 à 4 ans.
+8. Filtre habitacle — Changer tous les 15 000 à 20 000 km.
+9. Lave-glace — Compléter régulièrement.
+
+L'utilisateur écrit : "$message"
+
+Tu dois répondre en JSON avec :
+{
+  "id": numéro de l'opération (1 à 9),
+  "reason": "explication très courte du choix"
+}
+
+Ne réponds que par ce JSON, sans commentaire ni texte autour.
+PROMPT;
+
+    $response = $this->client->request('POST', 'https://api.openai.com/v1/chat/completions', [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $this->openAiApiKey,
+            'Content-Type' => 'application/json',
+        ],
+        'json' => [
+            'model' => 'gpt-3.5-turbo',
+            'messages' => [
+                ['role' => 'system', 'content' => 'Tu es un assistant automobile.'],
+                ['role' => 'user', 'content' => $prompt],
+            ],
+            'temperature' => 0.3
+        ],
+    ]);
+
+    $data = $response->toArray(false);
+    $json = trim($data['choices'][0]['message']['content'] ?? '');
+
+    $decoded = json_decode($json, true);
+    return is_array($decoded) && isset($decoded['id']) ? $decoded : null;
+}
 
 }
